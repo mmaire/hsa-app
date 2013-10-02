@@ -1,0 +1,90 @@
+/*
+ * Attribute panel style.
+ */
+
+/*****************************************************************************
+ * Unit scaling.
+ *****************************************************************************/
+
+#attribute-accordion {
+   font-size: 1.2rem;
+}
+
+.attribute-buttons-column {
+   font-size: 1.0rem;
+}
+
+/*****************************************************************************
+ * Positioning and formatting.
+ *****************************************************************************/
+
+.attribute-panel {
+   padding: 0.5rem;
+   width: 32rem;
+   text-align: center;
+}
+
+#attribute-accordion {
+   padding-top: 0.5rem;
+   text-align: left;
+}
+
+#attribute-accordion h1 {
+   text-align: left;
+}
+
+.attribute-family hr {
+   margin-top: -0.7rem;
+}
+
+.attribute-family-title,
+.attribute-group-title {
+   font-weight: bold;
+   text-transform: capitalize;
+}
+
+.attribute-group-title {
+   display: inline-block;
+   vertical-align: top;
+   float: left;
+}
+
+.attribute-group-toggle {
+   display: inline-block;
+   vertical-align: top;
+   float: right;
+}
+
+.attribute-group-toggle-anchor {
+   text-decoration: underline;
+}
+
+.attribute-buttons-container {
+   padding-top:    2.5rem;
+   padding-bottom: 1.7rem;
+}
+
+.attribute-buttons {
+   font-size: 0;
+   text-align: center;
+}
+
+.attribute-buttons-column {
+   margin-left:  0.15rem;
+   margin-right: 0.15rem;
+   display: inline-block;
+   vertical-align: top;
+}
+
+.attribute-label {
+   text-transform: capitalize;
+   width: 12rem;
+}
+
+/*****************************************************************************
+ * Mouse actions.
+ *****************************************************************************/
+
+.attribute-group-toggle-anchor:hover {
+   cursor:pointer;
+}

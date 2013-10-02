@@ -1,0 +1,41 @@
+/*
+ * Depth panel style.
+ */
+
+/*****************************************************************************
+ * Positioning and formatting.
+ *****************************************************************************/
+
+.depth-panel {
+   position: relative;
+   padding-top:    1.5rem;
+   padding-bottom: 1.5rem;
+   width:  10.0rem;
+   height: 35.0rem;
+}
+
+#depth-panel-label {
+   position: absolute;
+   left:   -6.6rem;
+   bottom: 18.0rem;
+   width:  20.0rem;
+   text-align: center;
+}
+
+#depth-slider {
+   position: absolute;
+   right:   2.7rem;
+   height: 35.0rem;
+}
+
+#depth-near-buttons {
+   position: absolute;
+   left:   2.2rem;
+   top:    0.5rem;
+}
+
+#depth-far-buttons {
+   position: absolute;
+   left:   2.3rem;
+   bottom: 1.0rem;
+}

@@ -1,0 +1,141 @@
+/*
+ * Annotator application style.
+ */
+
+/*****************************************************************************
+ * Positioning and formatting.
+ *****************************************************************************/
+
+/* body, header and footer */
+body {
+   margin:  0;
+   padding: 0;
+}
+
+#header, #footer {
+   padding-top:    0.5rem;
+   padding-bottom: 0.5rem;
+   text-align: center;
+   width: 100%;
+}
+
+/* ui layout */
+#ui-container {
+   margin: 0 auto;
+   text-align: center;
+}
+
+#ui {
+   font-size: 0;  /* eliminate whitespace between columns */
+   min-width: 100rem;
+}
+
+#left-column {
+   min-width: 10.2rem;
+}
+
+#center-column {
+   max-width: calc(100% - 45rem);
+   max-width: -moz-calc(100% - 45rem);
+   max-width: -webkit-calc(100% - 45rem);
+}
+
+/* canvas layout */
+#canvas-section {
+   position: relative;
+   margin-top:   0.5rem;
+   margin-left:  0.5rem;
+   margin-right: 0.5rem;
+}
+
+#main-canvas-container,
+#mini-canvas-container {
+   border-width: 0.1rem;
+}
+
+#main-canvas-container {
+   position: relative;
+   z-index: 0;
+}
+
+#mini-canvas-container {
+   position: absolute;
+   z-index: 1;
+   margin: 0.5rem;
+}
+
+#main-canvas {
+   position: relative;
+   max-width: 100%;
+}
+
+#mini-canvas {
+   position: relative;
+   max-width:  20rem;
+   max-height: 20rem;
+}
+
+/* bottom section layout */
+#bottom {
+   margin-left:  0.5rem;
+   margin-right: 0.5rem;
+}
+
+#bottom-left-panel {
+   float: left;
+}
+
+#bottom-right-panel {
+   float: right;
+}
+
+/*****************************************************************************
+ * Appearance.
+ *****************************************************************************/
+
+/* borders */
+#main-canvas-container,
+#mini-canvas-container {
+   border-style: solid;
+   border-color: #888888;
+}
+
+/* backgrounds */
+body {
+   /* background: #66FF66; */
+   background: #222222;
+}
+
+#header, #footer {
+   /* background: #999999; */
+   background: #222222;
+}
+
+#ui {
+   background: #222222;
+}
+
+.ann-unsaved {
+   color: #FF0000;
+}
+
+.ann-saved {
+   color: #222222;
+
+/*
+#left-column {
+   background: #FF6666;
+}
+
+#right-column {
+   background: #6666FF;
+}
+
+#center-column {
+   background: #66FFFF;
+}
+
+#bottom {
+   background: #FF6666;
+}
+*/

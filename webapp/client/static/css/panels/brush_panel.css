@@ -1,0 +1,148 @@
+/*
+ * Brush panel style.
+ */
+
+/*****************************************************************************
+ * Positioning and formatting.
+ *****************************************************************************/
+
+.brush-panel {
+   position: relative;
+   padding-top:    1.0rem;
+   padding-bottom: 1.0rem;
+   width:  10rem;
+   height: 20rem;
+   text-align: center;
+}
+
+.brush-types {
+   position: absolute;
+   top:  3.5rem;
+   left: 1.1rem;
+}
+
+#brush-types-label {
+   position: absolute;
+   left:  1.5rem;
+   top:  14.4rem;
+}
+
+.brush-modes {
+   position: absolute;
+   top:   3.5rem;
+   right: 0.9rem;
+}
+
+#draw-brush-modes-label,
+#paint-brush-modes-label {
+   position: absolute;
+   right: 1.3rem;
+}
+
+#draw-brush-modes-label {
+   top: 14.4rem;
+}
+
+#paint-brush-modes-label {
+   top: 10.9rem;
+}
+
+.brush-icon {
+   width:  3.3rem;
+   height: 3.3rem;
+}
+
+#brush-size-slider {
+   position: absolute;
+   left:  1.1rem;
+   top:  16.5rem;
+   width: 7.6rem;
+}
+
+#brush-size-label {
+   position: absolute;
+   left:   1.0rem;
+   top:   18.2rem;
+}
+
+#brush-size-text {
+   position: absolute;
+   right:  1.1rem;
+   top:   18.2rem;
+}
+
+#brush-touchup-label {
+   position: absolute;
+   left:   1.0rem;
+   top:   20.0rem;
+}
+
+.brush-touchup {
+   position: absolute;
+   right:  0.9rem;
+   top:   19.9rem;
+}
+
+#touchup-icon {
+   width:  1.1rem;
+   height: 1.1rem;
+}
+
+/*****************************************************************************
+ * Appearance.
+ *****************************************************************************/
+
+/* brush icon opacity */
+.brush-icon.ui-state-default {
+   opacity: 0.75;
+}
+
+.brush-icon.ui-state-hover,
+.brush-icon.ui-state-active {
+   opacity: 1.0;
+}
+
+/* brush type button backgrounds */
+#brush-circle-icon,
+.brush-circle-icon-bg {
+   background-image: url("icons/brush_circle.png");
+   background-size: 100%;
+}
+
+#brush-region-icon,
+.brush-region-icon-bg {
+   background-image: url("icons/brush_region.png");
+   background-size: 100%;
+}
+
+#brush-appearance-icon,
+.brush-appearance-icon-bg {
+   background-image: url("icons/brush_appearance.png");
+   background-size: 100%;
+}
+
+/* brush type button colors */
+#brush-circle-icon,
+#brush-region-icon,
+#brush-appearance-icon {
+   background-color: #AAAAAA;
+}
+
+/* brush mode button colors */
+#brush-positive-icon {
+   background-color: #66FF66;
+}
+
+#brush-negative-icon {
+   background-color: #FF6666;
+}
+
+#brush-erase-icon {
+   background-color: #FFFFFF;
+}
+
+/* touch-up button background */
+#touchup-icon.ui-state-active {
+   background-image: url("../theme/images/ui-icons_222222_256x240.png");
+   background-position: -83px -131px;
+}

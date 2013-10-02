@@ -1,0 +1,187 @@
+/*
+ * Region panel style.
+ */
+
+/*****************************************************************************
+ * Positioning and formatting.
+ *****************************************************************************/
+
+.region-panel {
+   padding-top:    0.5rem;
+   padding-bottom: 0.5rem;
+   min-width:  31.8rem;
+   min-height: 80.0rem;
+}
+
+#region-panel-label {
+   padding-bottom: 0.5rem;
+}
+
+#region-tree-view {
+   position: relative;
+   width: 100%;
+   height: calc(100% - 6.0rem);
+   height: -moz-calc(100% - 6.0rem);
+   height: -webkit-calc(100% - 6.0rem);
+   min-height: 74.0rem;
+}
+
+#region-tree-near-label {
+   position: absolute;
+   left: -1.2rem;
+   top:   3.0rem;
+   width: 5.0rem;
+}
+
+#region-tree-far-label {
+   position: absolute;
+   left:  -1.2rem;
+   bottom: 2.0rem;
+   width:  5.0rem;
+}
+
+#region-tree-depth-label {
+   position: absolute;
+   left:  -6.2rem;
+   bottom: 50%;
+   width:  15.0rem;
+}
+
+#region-tree-pane,
+#region-tree-slider {
+   position: absolute;
+   top: 0;
+   height: 100%;
+}
+
+#region-tree-pane {
+   overflow: hidden;
+   left: 2.4rem;
+   width: calc(100% - 3.8rem);
+   width: -moz-calc(100% - 3.8rem);
+   width: -webkit-calc(100% - 3.8rem);
+   min-width: 28.0rem;
+}
+
+#region-tree-slider {
+   right: 0.7rem;
+}
+
+#region-tree-container {
+   position: relative;
+   padding-left: 1.3rem;
+   width: -calc(100% - 2.4rem);
+   width: -moz-calc(100% - 2.4rem);
+   width: -webkit-calc(100% - 2.4rem);
+   min-width: 25.6rem;
+}
+
+#region-tree-buttons {
+   padding-top: 0.8rem;
+   width: 100%;
+}
+
+#region-tree-buttons button {
+   width:  40%;
+   height: 2.4rem;
+}
+
+.region-list {
+   margin:  0;
+   padding: 0;
+   min-height: 5.0rem;
+   list-style-type: none;
+}
+
+.region-list li {
+   margin-top:   0.1rem;
+   padding-top:  0.1rem;
+   padding-left: 1.2rem;
+}
+
+.region-icon-move,
+.region-icon-expand {
+   margin-top: 0.5rem;
+   float: left;
+}
+
+.region-icon-move {
+   margin-left: -2.4rem;
+}
+
+.region-icon-expand {
+   margin-left: -1.2rem;
+}
+
+.region-icon-details {
+   margin-left: -0.4rem;
+   float: left;
+}
+
+.region-box {
+   margin-left: 0.5rem;
+   padding: 0.5rem 0rem 0.5rem 0.5rem;
+   text-align: left;
+}
+
+.region-name {
+   width: calc(100% - 10.0rem);
+   width: -moz-calc(100% - 10.0rem);
+   width: -webkit-calc(100% - 10.0rem);
+   min-width: 5.0rem;
+}
+
+.region-buttons {
+   margin-top:  -0.1rem;
+   margin-right: 0.3rem;
+   font-size: 0.5rem;
+   float: right;
+}
+
+.region-trash-button {
+   margin-left: 0.3rem;
+}
+
+.region-details {
+   margin-top:  0.5rem;
+   margin-left: 1.2rem;
+   text-align: left;
+}
+
+/*****************************************************************************
+ * Appearance.
+ *****************************************************************************/
+
+#region-tree-pane {
+   border-top:    solid 0.1rem;
+   border-bottom: solid 0.1rem;
+   border-left:   solid 0.1rem;
+   border-top-left-radius:    0.5rem;
+   border-bottom-left-radius: 0.5rem;
+   border-color: #555555;
+}
+
+#region-tree-buttons button {
+   font-size: 1.2rem;
+   font-family: sans-serif;
+}
+
+.region-box {
+   border: solid 0.1rem;
+   border-radius: 0.5rem;
+}
+
+.region-name {
+   font-size: 1.4rem;
+   font-family: sans-serif;
+   border: none;
+   color: #222222;
+}
+
+/*****************************************************************************
+ * Action modifiers.
+ *****************************************************************************/
+
+.region-disabled {
+   opacity: 0.5;
+}

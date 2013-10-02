@@ -1,0 +1,189 @@
+/*
+ * UI widget styles.
+ */
+
+/*****************************************************************************
+ * Unit scaling.
+ *****************************************************************************/
+
+/* font sizes */
+.text-tiny       { font-size: 1.0rem; }
+.text-very-small { font-size: 1.2rem; }
+.text-small      { font-size: 1.4rem; }
+.text-medium     { font-size: 1.6rem; }
+.text-large      { font-size: 1.8rem; }
+.text-very-large { font-size: 2.0rem; }
+.text-huge       { font-size: 2.2rem; }
+
+/* default font sizes for page elements */
+.column {
+   font-size: 1.6rem;
+}
+
+.panel, .panel-left, .panel-right, .panel-top, .panel-bottom {
+   font-size: 1.6rem;
+}
+
+/*****************************************************************************
+ * Visibility.
+ *****************************************************************************/
+
+.hidden { display: none; }
+
+/*****************************************************************************
+ * Transforms.
+ *****************************************************************************/
+
+/* rotation */
+.rotate-left {
+   transform:         rotate(-90deg);
+   -moz-transform:    rotate(-90deg);
+   -webkit-transform: rotate(-90deg);
+}
+
+.rotate-right {
+   transform:         rotate(90deg);
+   -moz-transform:    rotate(90deg);
+   -webkit-transform: rotate(90deg);
+}
+
+/*****************************************************************************
+ * Positioning and formatting.
+ *****************************************************************************/
+
+/* absolute positioning locations */
+.position-top    { top:    0; }
+.position-bottom { bottom: 0; }
+.position-left   { left:   0; }
+.position-right  { right:  0; }
+
+/* columns */
+.column {
+   display: inline-block;
+   vertical-align: top;
+}
+
+/* panels */
+.panel, .panel-left, .panel-right, .panel-top, .panel-bottom {
+   margin-top:   0.5rem;
+   border-width: 0.1rem;
+}
+
+.panel-left  { margin-left:  auto; }
+.panel-right { margin-right: auto; }
+
+/* buttons */
+.button-grid {
+   margin: 0 auto;
+   text-align: center;
+}
+
+.button-row {
+   margin-top: 0.5rem;
+   margin-left:  auto;
+   margin-right: auto;
+   text-align: center;
+}
+
+.icon-button {
+   font-size:  1.0rem;
+   width:      2.4rem;
+   height:     2.4rem;
+}
+
+.icon-button-small {
+   font-size: 1.0rem;
+   width:     2.1rem;
+   height:    2.1rem;
+}
+
+/* sliders */
+.slider-vertical, .slider-vertical-thin {
+   width: 1.0rem;
+}
+
+.slider-vertical .ui-slider-handle {
+   margin-bottom: -0.5rem;
+   width:  2.0rem;
+   height: 1.0rem;
+}
+
+.slider-vertical-thin .ui-slider-handle {
+   margin-left:    0.25rem;
+   margin-bottom: -0.5rem;
+   width:  1.4rem;
+   height: 1.0rem;
+}
+
+.slider-horizontal, .slider-horizontal-thin {
+   height: 1.0rem;
+}
+
+.slider-horizontal .ui-slider-handle {
+   margin-left: -0.5rem;
+   width:  1.0rem;
+   height: 2.0rem;
+}
+
+.slider-horizontal-thin .ui-slider-handle {
+   margin-top:   0.25rem;
+   margin-left: -0.5rem;
+   width:  1.0rem;
+   height: 1.4rem;
+}
+
+/*****************************************************************************
+ * Appearance.
+ *****************************************************************************/
+
+/* cursors */
+.cursor-default   { cursor: default; }
+.cursor-text      { cursor: text; }
+.cursor-pointer   { cursor: pointer; }
+.cursor-crosshair { cursor: crosshair; }
+.cursor-wait      { cursor: wait; }
+.cursor-none      { cursor: none; }
+
+/* text */
+.text-tiny,
+.text-very-small,
+.text-small,
+.text-medium,
+.text-large,
+.text-very-large,
+.text-huge {
+   font-family: sans-serif;
+   font-weight: bold;
+   color: #222222;
+}
+
+/* panels */
+.panel, .panel-left, .panel-right, .panel-top, .panel-bottom {
+   background: #FFFFFF;
+   border-style: solid;
+   border-color: #888888;
+}
+
+.panel {
+   border-radius: 0.5rem;
+}
+
+.panel-left {
+   border-top-left-radius: 0.5rem;
+   border-bottom-left-radius: 0.5rem;
+}
+
+.panel-right {
+   border-top-right-radius: 0.5rem;
+   border-bottom-right-radius: 0.5rem;
+}
+
+.panel-top {
+   border-top-left-radius: 0.5rem;
+   border-top-right-radius: 0.5rem;
+}
+
+.panel-bottom {
+   border-bottom-left-radius: 0.5rem;
+   border-bottom-right-radius: 0.5rem;
+}

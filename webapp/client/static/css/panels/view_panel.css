@@ -1,0 +1,62 @@
+/*
+ * View panel style.
+ */
+
+/*****************************************************************************
+ * Positioning and formatting.
+ *****************************************************************************/
+
+.view-panel {
+   width: 10.0rem;
+}
+
+#pan-button-grid {
+   padding-top:    0.3rem;
+   padding-bottom: 0.3rem;
+   padding-left: 0.1rem;
+}
+
+#zoom-controls {
+   position: relative;
+   padding-top:    1.0rem;
+   padding-bottom: 1.0rem;
+   height: 16.0rem;
+}
+
+#zoom-controls-label {
+   position: absolute;
+   left:   -6.6rem;
+   bottom:  9.6rem;
+   width:  20.0rem;
+   text-align: center;
+}
+
+#zoom-slider {
+   position: absolute;
+   right:   2.7rem;
+   height: 14.0rem;
+}
+
+#zoom-text {
+   position: absolute;
+   right:  2.1rem;
+   bottom: 0.8rem;
+}
+
+#zoom-in-button-container {
+   position: absolute;
+   left:   2.3rem;
+   top:    1.0rem;
+}
+
+#zoom-out-button-container {
+   position: absolute;
+   left:   2.3rem;
+   bottom: 4.0rem;
+}
+
+#zoom-fit-button-container {
+   position: absolute;
+   left:   2.3rem;
+   bottom: 1.0rem;
+}
