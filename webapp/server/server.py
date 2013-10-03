@@ -55,8 +55,16 @@ def write_attributes(filename):
    f.close();
 
 bottle.debug(True);
-#run(app, host="localhost", port=8080, reloader=True);
 
 root_app = Bottle();
-root_app.mount("/test/", app);
+root_app.mount("/hsa-app/", app);
+
+# The next line runs the webapp locally, so that the annotation interface for
+# the example image is available at:
+#    http://localhost:8082/hsa-app/annotator?image=example
+# To allow network access to the webapp, replace "localhost" by the ip address
+# of the machine running the server (in the form "xxx.xxx.xxx.xxx").  Then
+# navigate to:
+#    http://xxx.xxx.xxx.xxx:8082/hsa-app/annotator?image=example
+# The port number can be changed as desired.
 run(root_app, host="localhost", port=8082, reloader=True);

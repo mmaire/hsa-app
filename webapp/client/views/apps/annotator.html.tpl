@@ -77,7 +77,7 @@
    %include webgl/slate.fs.tpl
    <!-- document initialization -->
    <script>
-      var ZOOM = 1.5;
+      var ZOOM = 1.0;
 
       /* get click coordinates */
       var imageCoords = function(im, ev) {
@@ -459,7 +459,7 @@
       /* load segmentation for brush assistance */
       function loadBrushSeg() {
          var xhra = new XMLHttpRequest();
-         xhra.open('GET', '/test/images/' + img_name + '.seg', true);
+         xhra.open('GET', '/hsa-app/images/' + img_name + '.seg', true);
          xhra.responseType = "arraybuffer";
          xhra.onload = function(e) {
             /* update brush */
@@ -476,7 +476,7 @@
       /* load scene annotation */
       function loadAnnotation() {
          var xhrb = new XMLHttpRequest();
-         xhrb.open('GET', '/test/images/' + img_name + '.ann', true);
+         xhrb.open('GET', '/hsa-app/images/' + img_name + '.ann', true);
          xhrb.responseType = "arraybuffer";
          xhrb.onload = function(e) {
             /* create segmentation */
@@ -500,7 +500,7 @@
       /* save scene annotation */
       function saveAnnotation() {
          var xhr = new XMLHttpRequest();
-         xhr.open('POST', '/test/images/' + img_name + '.ann', true);
+         xhr.open('POST', '/hsa-app/images/' + img_name + '.ann', true);
          var ds = new DataStream();
          seg.serialize(ds);
          var arr = new Uint8Array(ds.buffer);
