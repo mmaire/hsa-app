@@ -4,11 +4,11 @@
    <script src="static/javascript/libs/datastream/encoding-indexes.js"></script>
    <script src="static/javascript/libs/datastream/encoding.js"></script>
    <script src="static/javascript/libs/datastream/DataStream.js"></script>
-   <script src="static/javascript/libs/jquery/jquery.js"></script>
+   <script src="static/javascript/libs/jquery/jquery.min.js"></script>
    <script src="static/javascript/libs/jquery/jquery-mousewheel.js"></script>
-   <script src="static/javascript/libs/jquery/jquery-ui.js"></script>
+   <script src="static/javascript/libs/jquery/jquery-ui.min.js"></script>
    <script src="static/javascript/libs/jquery/purl.js"></script>
-   <script src="static/javascript/libs/webgl/glMatrix.js"></script>
+   <script src="static/javascript/libs/webgl/gl-matrix-0.9.6.js"></script>
    <script src="static/javascript/libs/webgl/webgl-utils.js"></script>
    <!-- javascript - utilities -->
    <script src="static/javascript/util/arr_util.js"></script>

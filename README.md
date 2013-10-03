@@ -1,5 +1,5 @@
-Hierarchical Scene Annotator (HSA) - Web Application
-----------------------------------------------------
+Hierarchical Scene Annotator (HSA) - WebApp
+-------------------------------------------
 
 Citation
 --------
@@ -35,10 +35,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 External Dependencies
 ---------------------
 
-This project includes code from various external sources, all of which are
-licensed under terms compatible with the GNU Affero General Public License
-(AGPL).  The project as well as any code specific to the HSA application may
-only be distributed under the terms of the GNU AGPL.
+This project includes code from various external sources.  The complete
+project as well as any code specific to the HSA application may only be
+distributed under the terms of the GNU Affero General Public License.
 
 Source code for the external dependencies is available from their respective
 websites as well as independent branches of the hsa-app git repository, as
@@ -61,19 +60,9 @@ listed below.
 > License: See LICENSE.md in extern-gl-matrix branch  
 > Branch: http://github.com/mmaire/hsa-app/tree/extern-gl-matrix  
 
-### jBinary ###
-> GitHub: http://github.com/jDataView/jBinary  
-> License: MIT  
-> Branch: http://github.com/mmaire/hsa-app/tree/extern-jbinary  
-
-### jDataView ###
-> GitHub: http://github.com/jDataView/jDataView  
-> License: WTFPL  
-> Branch: http://github.com/mmaire/hsa-app/tree/extern-jdataview  
-
-### jDataView and jBinary (distribution) ###
-> GitHub: http://github.com/jDataView/dist  
-> Branch: http://github.com/mmaire/hsa-app/tree/extern-jdataview-dist  
+### DataStream.js ###
+> GitHub: http://github.com/kig/DataStream.js  
+> Branch: http://github.com/mmaire/hsa-app/tree/extern-datastream  
 
 ### jquery and jquery-ui ###
 > Website: http://jquery.org/  
