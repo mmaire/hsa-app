@@ -112,12 +112,6 @@ listed below.
 > License: MIT  
 > Branch: http://github.com/mmaire/hsa-app/tree/extern-bottle  
 
-### bottle-cork ###
-> Website: http://cork.firelet.net/  
-> GitHub: http://github.com/FedericoCeratto/bottle-cork  
-> License: LGPL  
-> Branch: http://github.com/mmaire/hsa-app/tree/extern-bottle-cork  
-
 ### gl-matrix ###
 > GitHub: http://github.com/toji/gl-matrix  
 > License: See LICENSE.md in extern-gl-matrix branch  
