@@ -58,7 +58,7 @@ SetUtil.unique = function(s) {
  */
 SetUtil.union = function(p, q) {
    var len = p.length + q.length;
-   var s = ArrUtil.create(len, p);
+   var s = ArrUtil.create(len, ArrUtil.getClass(p));
    for (var n = 0; n < p.length; ++n)
       s[n] = p[n];
    for (var n = 0; n < q.length; ++n)
@@ -79,7 +79,7 @@ SetUtil.intersect = function(p, q) {
    var qu = SetUtil.unique(q);
    /* allocate array for intersection */
    var len = Math.min(pu.length, qu.length);
-   var s = ArrUtil.create(len, p);
+   var s = ArrUtil.create(len, ArrUtil.getClass(p));
    /* compute intersection */
    var i = 0;
    var j = 0;
@@ -114,7 +114,7 @@ SetUtil.setdiff = function(p, q) {
    var pu = SetUtil.unique(p);
    var qu = SetUtil.unique(q);
    /* allocate array for difference */
-   var s = ArrUtil.create(pu.length, pu);
+   var s = ArrUtil.create(pu.length, ArrUtil.getClass(pu));
    /* compute set difference */
    var i = 0;
    var j = 0;

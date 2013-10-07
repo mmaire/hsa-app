@@ -32,7 +32,7 @@ function ImgUtil() { }
  * @returns {array}        pixel x-coordinates
  */
 ImgUtil.coordsX = function(sy, pixels) {
-   var xs = ArrUtil.create(pixels.length, pixels);
+   var xs = ArrUtil.create(pixels.length, ArrUtil.getClass(pixels));
    for (var n = 0; n < pixels.length; ++n)
       xs[n] = Math.floor(pixels[n] / sy);
    return xs;
@@ -46,7 +46,7 @@ ImgUtil.coordsX = function(sy, pixels) {
  * @returns {array}        pixel y-coordinates
  */
 ImgUtil.coordsY = function(sy, pixels) {
-   var ys = ArrUtil.create(pixels.length, pixels);
+   var ys = ArrUtil.create(pixels.length, ArrUtil.getClass(pixels));
    for (var n = 0; n < pixels.length; ++n)
       ys[n] = pixels[n] % sy;
    return ys;
@@ -61,7 +61,7 @@ ImgUtil.coordsY = function(sy, pixels) {
  * @returns {array}    pixel ids
  */
 ImgUtil.coordsLinear = function(sy, xs, ys) {
-   var pixels = ArrUtil.create(xs.length, xs);
+   var pixels = ArrUtil.create(xs.length, ArrUtil.getClass(xs));
    for (var n = 0; n < xs.length; ++n)
       pixels[n] = xs[n]*sy + ys[n];
    return pixels;
@@ -92,7 +92,7 @@ ImgUtil.bboxFromPixels = function(sy, pixels) {
  * @returns {array}    4-element array of (xmin,ymin,xlim,ylim)
  */
 ImgUtil.bboxFromCoords = function(xs, ys) {
-   var bbox = ArrUtil.create(4, xs);
+   var bbox = ArrUtil.create(4, ArrUtil.getClass(xs));
    if (xs.length > 0) {
       bbox[0] = SetUtil.minElement(xs);
       bbox[2] = SetUtil.maxElement(xs) + 1;
@@ -513,7 +513,7 @@ ImgUtil.crossLabels = function(labelsA, labelsB, lbl_map) {
    lbl_map = (typeof(lbl_map) != "undefined") ?
       lbl_map : ImgUtil.crossLabelMap(labelsA, labelsB);
    /* apply map to label pairs */
-   var labels = ArrUtil.create(labelsA.length, labelsA);
+   var labels = ArrUtil.create(labelsA.length, ArrUtil.getClass(labelsA));
    for (var n = 0; n < labels.length; ++n)
       labels[n] = lbl_map[labelsA[n]][labelsB[n]];
    return labels;
