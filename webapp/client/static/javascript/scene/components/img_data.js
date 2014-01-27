@@ -48,6 +48,15 @@ function ImgData(im) {
  *****************************************************************************/
 
 /**
+ * Get number of pixels in the image.
+ *
+ * @returns {int} image size (height * width)
+ */
+ImgData.prototype.size = function() {
+   return (this.im.height) * (this.im.width);
+}
+
+/**
  * Get image size in x-dimension.
  *
  * @returns {int} image size in x-dimension
