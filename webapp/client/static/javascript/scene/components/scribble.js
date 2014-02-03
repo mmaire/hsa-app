@@ -26,20 +26,21 @@
 /**
  * Scribble constructor.
  *
- * @scribble A scribble records brush strokes made by a user during the process
- *           of defining a {@link Region} using machine-assisted segmentation.
+ * @class A scribble records brush strokes made by a user during the process
+ *        of defining a {@link Region} using machine-assisted segmentation.
  *
  * In addition to brush strokes, a scribble stores (hard and soft) inclusion
  * and exclusion constraints, as well as parameters governing assitance from
- * a precomputed machine segmentation ({@link UCM}).
- *
- * Together, the scribble data and the machine UCM are necessary and sufficient
- * to reconstruct the set of pixels defining the region.
+ * a precomputed machine segmentation ({@link UCM}) and areas inferred to
+ * belong to the region as result of propagating brush strokes according to
+ * the UCM.
  *
  * @constructor
  * @param {ImgData} img image being annotated
  */
 function Scribble(img) {
+   /* store reference to image */
+   this.img = img;                                 /* underlying image */
    /* initialize pixel and mask flags */
    this.px_flags   = new Uint32Array(img.size());  /* pixel selection status */
    this.mask_flags = new Uint32Array(img.size());  /* constraint mask status */
@@ -150,7 +151,6 @@ Scribble.prototype.save = function() {
  */
 Scribble.prototype.load = function(data) {
    data.loadInto(this);
-   this.renderUpdateAll();
 }
 
 /*****************************************************************************
@@ -283,7 +283,7 @@ Scribble.prototype.renderUpdateAll = function() {
  */
 Scribble.prototype.strokeDrawNegative = function(pixels, prop) {
    /* determine status flag according to propagation */
-   prop  = (typeof(prop)  != "undefined") ? prop  : false;
+   prop = (typeof(prop) != "undefined") ? prop  : false;
    var flag = prop ? Scribble.FLAG_STRONG : Scribble.FLAG_TRUE;
    /* get byte-wise view of pixel and mask data */
    var px   = new Uint8Array(this.px_flags.buffer);
@@ -312,7 +312,7 @@ Scribble.prototype.strokeDrawNegative = function(pixels, prop) {
  */
 Scribble.prototype.strokeDrawPositive = function(pixels, prop) {
    /* determine status flag according to propagation */
-   prop  = (typeof(prop)  != "undefined") ? prop  : false;
+   prop = (typeof(prop) != "undefined") ? prop  : false;
    var flag = prop ? Scribble.FLAG_STRONG : Scribble.FLAG_TRUE;
    /* get byte-wise view of pixel and mask data */
    var px   = new Uint8Array(this.px_flags.buffer);
