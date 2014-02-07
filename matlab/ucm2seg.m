@@ -12,7 +12,7 @@ function seg = ucm2seg(ucm, th)
    % default arguments
    if (nargin < 2), th = 0.10; end
    % threshold ucm
-   ucm_th = ucm.*(ucm >= th);
+   ucm_th = ucm.*(ucm > th);
    % convert to supergrid format
    ucm2 = super_contour_4c(ucm_th);
    % label regions

@@ -171,13 +171,28 @@
 
       /* initialization - annotation data */
       function initAnnotation() {
-         /* attach renderer */
-         r_seg = new SegmentationRenderer(ctxt, seg);
-         /* create slate */
-         slt = new Slate(img, new UCM(img));
-         /* attach renderer */
-         r_slt = new ScribbleRenderer(ctxt, slt.scrib);
-         r_slt.setDepth(D_SLT);
+         /* load UCM */
+         var xhrb = new XMLHttpRequest();
+         xhrb.open('GET', '/hsa-app/images/' + img_name + '.ds', true);
+         xhrb.responseType = "arraybuffer";
+         xhrb.onload = function(e) {
+            /* attach renderer */
+            r_seg = new SegmentationRenderer(ctxt, seg);
+            /* create slate */
+            var arrb = new Uint8Array(xhrb.response);
+            if (arrb.length > 1000) {
+               /* create slate */
+               var ds = new DataStream(arrb.buffer);
+               slt = new Slate(img, new UCM(ds));
+            } else {
+               /* create slate */
+               slt = new Slate(img, new UCM(img));
+            }
+            /* attach renderer */
+            r_slt = new ScribbleRenderer(ctxt, slt.scrib);
+            r_slt.setDepth(D_SLT);
+         };
+         xhrb.send();
       }
 
       /* initialization - brush data */

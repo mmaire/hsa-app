@@ -80,7 +80,7 @@ if (ds instanceof ImgData) {
    this.reg_sort = new Array(this.n_regions);
    for (var r = 0; r < this.n_regions; ++r)
       this.reg_sort[r] = this.reg_info[r];
-   ArrUtil.sort(this.reg_sort, function(a,b){return a-b;});
+   ArrUtil.sort(this.reg_sort, function(a,b){return a.merge_th-b.merge_th;});
    return;
 }
 
@@ -141,7 +141,7 @@ if (ds instanceof ImgData) {
    this.reg_sort = new Array(this.n_regions);
    for (var r = 0; r < this.n_regions; ++r)
       this.reg_sort[r] = this.reg_info[r];
-   ArrUtil.sort(this.reg_sort, function(a,b){return a-b;});
+   ArrUtil.sort(this.reg_sort, function(a,b){return a.merge_th-b.merge_th;});
 }
 
 /*****************************************************************************
@@ -328,8 +328,8 @@ UCM.prototype.labelsPropagate = function(labels, th) {
             labels[r_id] = lbl_min;
          } else {
             /* determine winner by label strength */
-            var mag_min = Math.abs(label_min);
-            var mag_max = Math.abs(label_max);
+            var mag_min = Math.abs(lbl_min);
+            var mag_max = Math.abs(lbl_max);
             if (mag_min > mag_max) {
                /* negative labeling is stronger */
                labels[r_id] = lbl_min;
