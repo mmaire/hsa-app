@@ -58,6 +58,32 @@
  * @param {DataStream} ds datastream from which to read UCM
  */
 function UCM(ds) {
+
+if (ds instanceof ImgData) {
+   this.img_size_x = ds.sizeX();
+   this.img_size_y = ds.sizeY();
+   this.img_size = ds.size();
+   this.n_regions_leaf = 1;
+   this.n_regions = 1;
+   this.px_rid_map = new Int32Array(this.img_size);
+   this.reg_info = new Array(1);
+   this.reg_info[0] = {
+      id: 0,
+      parent_region: null,
+      child_regions: [],
+      merge_th : 0,
+      pixels : new Int32Array(this.img_size)
+   };
+   for (var n = 0; n < this.img_size; ++n)
+      this.reg_info[0].pixels[n] = n;
+   /* sort regions by merge threshold (in ascending order) */
+   this.reg_sort = new Array(this.n_regions);
+   for (var r = 0; r < this.n_regions; ++r)
+      this.reg_sort[r] = this.reg_info[r];
+   ArrUtil.sort(this.reg_sort, function(a,b){return a-b;});
+   return;
+}
+
    /* retrieve image size */
    this.img_size_x = ds.readInt32();
    this.img_size_y = ds.readInt32();
@@ -76,7 +102,7 @@ function UCM(ds) {
          child_regions : [],     /* list of child regions */
          merge_th      : 0,      /* merge thresholds */
          pixels        : null    /* pixels in region (null if not leaf) */
-      }
+      };
    }
    /* retrieve region info */
    for (var n = 0; n < this.n_regions; ++n) {
@@ -241,8 +267,8 @@ UCM.prototype.lookupPixels = function(r_id) {
  * Specifically, labels propagate as follows:
  *
  * (1) Propagate from leaves to roots:
- *     If the children of an unlabeled node are labeled consistently (all >= 0
- *     or all <= 0), the parent assumes the label of the strongest child.
+ *     An unlabled node receives the label of its strongest child, unless
+ *     children disagree with equal strength.
  *
  * (2) Propagate from root to leaves:
  *     Unlabeled children assume the label of their closest labeled ancestor.
@@ -294,17 +320,26 @@ UCM.prototype.labelsPropagate = function(labels, th) {
             lbl_max = Math.max(lbl_max, c_lbl);
          }
          /* check labeling consistency */
-         if (isNaN(lbl_min) || isNaN(lbl_max) ||
-             ((lbl_min < 0) && (lbl_max > 0)))
-         {
+         if (isNaN(lbl_min) || isNaN(lbl_max)) {
             /* inconsistent children */
             labels[r_id] = NaN;
-         } else if ((lbl_min < 0) && (lbl_max == 0)) {
-            /* children agree on negative label */
+         } else if (lbl_min == lbl_max) {
+            /* children agree exactly */
             labels[r_id] = lbl_min;
-         } else if ((lbl_min == 0) && (lbl_max > 0)) {
-            /* children agree on positive label */
-            labels[r_id] = lbl_max;
+         } else {
+            /* determine winner by label strength */
+            var mag_min = Math.abs(label_min);
+            var mag_max = Math.abs(label_max);
+            if (mag_min > mag_max) {
+               /* negative labeling is stronger */
+               labels[r_id] = lbl_min;
+            } else if (mag_min < mag_max) {
+               /* positive labeling is stronger */
+               labels[r_id] = lbl_max;
+            } else {
+               /* children disagree with same strength (inconsistent) */
+               labels[r_id] = NaN;
+            }
          }
       }
    }
@@ -313,11 +348,15 @@ UCM.prototype.labelsPropagate = function(labels, th) {
       /* get next region in reverse merge order */
       var reg = this.reg_sort[n];
       var r_id = reg.id;
-      /* check that not already labeled */
-      if (labels[r_id] == 0) {
-         /* inherit parent label */
-         if (reg.parent_region != null)
-            labels[r_id] = labels[reg.parent_region.id];
+      /* check if parent label overrules current label */
+      if (reg.parent_region != null) {
+         var lbl_parent = labels[reg.parent_region.id];
+         if (!isNaN(lbl_parent)) {
+            if (Math.abs(lbl_parent) > Math.abs(labels[r_id])) {
+               /* inherit parent label */
+               labels[r_id] = lbl_parent;
+            }
+         }
       }
    }
    /* replace NaN labels (disagreement) with zero labels (unlabeled) */

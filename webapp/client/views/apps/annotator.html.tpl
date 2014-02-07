@@ -23,8 +23,11 @@
    <script src="static/javascript/scene/components/img_data.js"></script>
    <script src="static/javascript/scene/components/polygon.js"></script>
    <script src="static/javascript/scene/components/region.js"></script>
+   <script src="static/javascript/scene/components/scribble.js"></script>
+   <script src="static/javascript/scene/components/scribble_data.js"></script>
    <script src="static/javascript/scene/components/segmentation.js"></script>
    <script src="static/javascript/scene/components/slate.js"></script>
+   <script src="static/javascript/scene/components/ucm.js"></script>
    <!-- javascript - scene renderers -->
    <script src="static/javascript/scene/renderers/brush_renderer.js"></script>
    <script src="static/javascript/scene/renderers/colormap_renderer.js"></script>
@@ -32,11 +35,11 @@
    <script src="static/javascript/scene/renderers/pixel_attribute_renderer.js"></script>
    <script src="static/javascript/scene/renderers/polygon_renderer.js"></script>
    <script src="static/javascript/scene/renderers/region_renderer.js"></script>
-   <script src="static/javascript/scene/renderers/render_context.js"></script>
    <script src="static/javascript/scene/renderers/renderer.js"></script>
+   <script src="static/javascript/scene/renderers/render_context.js"></script>
+   <script src="static/javascript/scene/renderers/scribble_renderer.js"></script>
    <script src="static/javascript/scene/renderers/segmentation_renderer.js"></script>
    <script src="static/javascript/scene/renderers/shader.js"></script>
-   <script src="static/javascript/scene/renderers/slate_renderer.js"></script>
    <!-- javascript - ui utilities -->
    <script src="static/javascript/ui/util/panel.js"></script>
    <!-- javascript - ui panels -->
@@ -73,8 +76,8 @@
    %include webgl/polygon.fs.tpl
    %include webgl/region.vs.tpl
    %include webgl/region.fs.tpl
-   %include webgl/slate.vs.tpl
-   %include webgl/slate.fs.tpl
+   %include webgl/scribble.vs.tpl
+   %include webgl/scribble.fs.tpl
    <!-- document initialization -->
    <script>
       var ZOOM = 1.0;
@@ -171,9 +174,9 @@
          /* attach renderer */
          r_seg = new SegmentationRenderer(ctxt, seg);
          /* create slate */
-         slt = new Slate(img);
+         slt = new Slate(img, new UCM(img));
          /* attach renderer */
-         r_slt = new SlateRenderer(ctxt, slt);
+         r_slt = new ScribbleRenderer(ctxt, slt.scrib);
          r_slt.setDepth(D_SLT);
       }
 
@@ -297,16 +300,8 @@
                   } else {
                      brsh.clearContainment();
                   }
-                  /* clear slate */
-                  slt.clear();
-                  /* restrict slate to parent */
-                  if ((rp != null) && (rp != seg.root)) {
-                     slt.setAllowedRegion(rp);
-                  }
-                  /* require slate to include children */
-                  slt.setRequiredRegions(r.getChildRegions());
-                  /* select current region */
-                  slt.selectRegion(r);
+                  /* load region into slate */
+                  slt.regionLoad(r);
                   /* make region active */
                   r_active = r;
                   /* copy region color to brush and slate */
@@ -317,7 +312,7 @@
                      color_brsh[3] = 0.5;
                      color_slt[3]  = 0.5;
                      r_brsh.setColor(color_brsh);
-                     r_slt.setColor(color_slt);
+                     //r_slt.setColor(color_slt);
                      brush_panel.setModeIconColor(
                         "positive",
                         'rgb(' +
@@ -373,9 +368,9 @@
                if ((is_edit) && (coords.flag)) {
                   var px = brsh.grabPixels();
                   if (brush_panel.getBrushMode() != "erase") {
-                     if (ev.shiftKey) { slt.deselectPixels(px); } else { slt.selectPixels(px); }
+                     if (ev.shiftKey) { slt.strokeErasePositive(px); } else { slt.strokeDrawPositive(px, true); }
                   } else {
-                     if (ev.shiftKey) { slt.selectPixels(px); } else { slt.deselectPixels(px); }
+                     if (ev.shiftKey) { slt.strokeEraseNegative(px); } else { slt.strokeDrawNegative(px, true); }
                   }
                }
             }
@@ -393,9 +388,9 @@
                      if ((is_edit) && (coords.flag)) {
                         var px = brsh.grabPixels();
                         if (brush_panel.getBrushMode() != "erase") {
-                           if (ev.shiftKey) { slt.deselectPixels(px); } else { slt.selectPixels(px); }
+                           if (ev.shiftKey) { slt.strokeErasePositive(px); } else { slt.strokeDrawPositive(px, true); }
                         } else {
-                           if (ev.shiftKey) { slt.selectPixels(px); } else { slt.deselectPixels(px); }
+                           if (ev.shiftKey) { slt.strokeEraseNegative(px); } else { slt.strokeDrawNegative(px, true); }
                         }
                      }
                   }
@@ -405,8 +400,7 @@
                   break;
                case 3:
                   /* right click */
-                  var px = slt.grabPixels();
-                  r_active.setPixels(px);
+                  slt.regionSave(r_active);
                   var r_entry = region_panel.region_entry_map[r_active.getRegionId()];
                   var r_box = r_entry.children(".region-box");
                   r_box.css("background", "");
@@ -515,7 +509,7 @@
          if (img != null) {
             ctxt.canvasClear();
             if (is_edit) {
-               Renderer.draw(slt);
+               Renderer.draw(slt.scrib);
                Renderer.draw(brsh);
             } else {
                Renderer.draw(img);

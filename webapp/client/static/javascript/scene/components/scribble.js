@@ -127,6 +127,26 @@ Scribble.MASK_CH_SNEG = 2; /* soft negative (false/true) */
 Scribble.MASK_CH_SPOS = 3; /* soft positive (false/true) */
 
 /*****************************************************************************
+ * Scribble reset.
+ *****************************************************************************/
+
+/**
+ * Clear all user marks, constraints, and inferences.  Reset the stroke log.
+ * This results in a blank scribble with no stroke history.
+ */
+Scribble.prototype.clear = function() {
+   /* reset pixel and mask flags */
+   this.px_flags   = new Uint32Array(img.size());
+   this.mask_flags = new Uint32Array(img.size());
+   /* reset stroke log */
+   this.stroke_id_curr = 1;
+   this.stroke_id_soft = 1;
+   this.stroke_log = new Int16Array(img.size());
+   /* update attached renderers */
+   this.renderUpdateAll();
+}
+
+/*****************************************************************************
  * Scribble compression.
  *
  * The {@link ScribbleData} class provides a compressed storage format that
@@ -219,14 +239,14 @@ Scribble.prototype.grabSelectedPixels = function() {
  * Delay updating attached rendering targets until calling resumeRendering().
  */
 
-Scribble.prototype.pauseRendering() {
+Scribble.prototype.pauseRendering = function() {
    this.render_delay = true;
 }
 
 /**
  * Resume updating attached rendering targets and apply any delayed updates.
  */
-Scribble.prototype.resumeRendering() {
+Scribble.prototype.resumeRendering = function() {
    /* remove delay on future rendering requests */
    this.render_delay = false;
    /* process queued rendering events */
@@ -484,6 +504,37 @@ Scribble.prototype.inferenceUpdate = function(pixels, val, type) {
  *****************************************************************************/
 
 /**
+ * Forbid selection of pixels outside of the specified subset.
+ * Remove any positive user markings covering them.
+ *
+ * @param {array} pixels ids of pixels in permitted subset
+ */
+Scribble.prototype.constrainSubset = function(pixels) {
+   /* get byte-wise view of pixel and mask data */
+   var px   = new Uint8Array(this.px_flags.buffer);
+   var mask = new Uint8Array(this.mask_flags.buffer);
+   /* forbid all pixels */
+   for (var p = 0; p < this.mask_flags.length; ++p)
+      mask[4*p + Scribble.MASK_CH_HNEG] = Scribble.FLAG_TRUE;
+   /* allow pixels in subset */
+   for (var n = 0; n < pixels.length; ++n)
+      mask[4*pixels[n] + Scribble.MASK_CH_HNEG] = Scribble.FLAG_FALSE;
+   /* remove contradictory state on forbidden pixels */
+   for (var p = 0; p < this.mask_flags.length; ++p) {
+      var offset = 4*p;
+      var hneg = mask[offset + Scribble.MASK_CH_HNEG];
+      if (hneg == Scribble.FLAG_TRUE) {
+         /* remove positive user markings */
+         px[offset + Scribble.PX_CH_POS] = Scribble.FLAG_FALSE;
+         /* remove positive constraints */
+         mask[offset + Scribble.MASK_CH_HPOS] = Scribble.FLAG_FALSE;
+      }
+   }
+   /* update attached renderers */
+   this.renderUpdateAll();
+}
+
+/**
  * Forbid selection of the specified pixels.
  * Remove any positive user markings covering them.
  *
@@ -502,7 +553,7 @@ Scribble.prototype.constrainForbidden = function(pixels) {
       px[offset + Scribble.PX_CH_POS] = Scribble.FLAG_FALSE;
       /* update constraints */
       mask[offset + Scribble.MASK_CH_HNEG] = Scribble.FLAG_TRUE;
-      mark[offset + Scribble.MASK_CH_HPOS] = Scribble.FLAG_FALSE;
+      mask[offset + Scribble.MASK_CH_HPOS] = Scribble.FLAG_FALSE;
    }
    /* update attached renderers */
    this.renderUpdateAll();
@@ -527,7 +578,7 @@ Scribble.prototype.constrainRequired = function(pixels) {
       px[offset + Scribble.PX_CH_NEG] = Scribble.FLAG_FALSE;
       /* update constraints */
       mask[offset + Scribble.MASK_CH_HNEG] = Scribble.FLAG_FALSE;
-      mark[offset + Scribble.MASK_CH_HPOS] = Scribble.FLAG_TRUE;
+      mask[offset + Scribble.MASK_CH_HPOS] = Scribble.FLAG_TRUE;
    }
    /* update attached renderers */
    this.renderUpdateAll();
@@ -549,7 +600,7 @@ Scribble.prototype.constrainOptional = function(pixels) {
       var offset = 4*p;
       /* update constraints */
       mask[offset + Scribble.MASK_CH_HNEG] = Scribble.FLAG_FALSE;
-      mark[offset + Scribble.MASK_CH_HPOS] = Scribble.FLAG_FALSE;
+      mask[offset + Scribble.MASK_CH_HPOS] = Scribble.FLAG_FALSE;
    }
    /* update attached renderers */
    this.renderUpdateConstraints();
@@ -567,7 +618,7 @@ Scribble.prototype.clearConstraints = function() {
       var offset = 4*p;
       /* update constraints */
       mask[offset + Scribble.MASK_CH_HNEG] = Scribble.FLAG_FALSE;
-      mark[offset + Scribble.MASK_CH_HPOS] = Scribble.FLAG_FALSE;
+      mask[offset + Scribble.MASK_CH_HPOS] = Scribble.FLAG_FALSE;
    }
    /* update attached renderers */
    this.renderUpdateConstraints();

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Michael Maire <mmaire@gmail.com>
+ * Copyright (C) 2012-2014 Michael Maire <mmaire@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Affero General Public License as published by
@@ -27,359 +27,313 @@
  * Slate constructor.
  *
  * @class A slate provides a drawing area for selecting a region from an image.
- *
- * Specifically, a slate manages selection of a subset of pixels, optionally
- * subject to constraints that some pixels must be included in the selection
- * (required) and others must be excluded (not allowed).
- *
- * By default, the selection can be any subset of the image (all pixels are
- * allowed and none are required).
- *
- * In the event that constraints conflict (a required pixel is not allowed),
- * the most recently activated constraint is enforced.
+ *        It manages interaction between user scribbles and UCM inference.
  *
  * @constructor
  * @param {ImgData} img image being annotated
+ * @param {UCM}     ucm ultrametric contour map for image
  */
-function Slate(img) {
-   this.img  = img;                   /* image from which to select pixels */
-   this.mask = Slate.createMask(img); /* select, allow, require status mask */
-   this.renderers = {};               /* slate renderers */
+function Slate(img, ucm) {
+   /* store image and ucm */
+   this.img = img;
+   this.ucm = ucm;
+   /* create active scribble */
+   this.scrib = new Scribble(img);
+   /* initialize inferred region labels */
+   this.ucm_labels_base = ucm.labelsCreate(); /* base labels from user marks */
+   this.ucm_labels_pred = ucm.labelsCreate(); /* predicted labels via ucm */
+   /* initialize counts of user markings within ucm leaf regions */
+   this.reg_cnt_neg  = new Uint32Array(ucm.countLeaves());
+   this.reg_cnt_pos  = new Uint32Array(ucm.countLeaves());
+   this.reg_cnt_sneg = new Uint32Array(ucm.countLeaves());
+   this.reg_cnt_spos = new Uint32Array(ucm.countLeaves());
 }
 
 /*****************************************************************************
- * Slate mask layout.
+ * Slate region label values for UCM inference.
  *****************************************************************************/
 
-Slate.MASK_OFFSET_SELECT  = 0;   /* byte offset for selection flag */
-Slate.MASK_OFFSET_ALLOW   = 1;   /* byte offset for allow flag */
-Slate.MASK_OFFSET_REQUIRE = 2;   /* byte offset for require flag */
-
-/*****************************************************************************
- * Slate mask values.
- *****************************************************************************/
-
-Slate.MASK_VAL_FALSE =   0;      /* constant value for false in mask */
-Slate.MASK_VAL_TRUE  = 255;      /* constant value for true in mask */
-
-/*****************************************************************************
- * Slate mask creation.
- *****************************************************************************/
-
-/**
- * Create a pixel selection mask for the given image.
- *
- * Initialize the mask so that:
- *    (1) no pixels are selected
- *    (2) all pixels are allowed
- *    (3) no pixels are required
- *
- * @param   {ImgData}     img image
- * @returns {Uint32Array}     pixel selection status mask
- */
-Slate.createMask = function(img) {
-   /* get image size */
-   var sx = img.sizeX();
-   var sy = img.sizeY();
-   /* allocate mask */
-   var mask = new Uint32Array(sx * sy);
-   /* grab byte-wise view of mask data */
-   var mdata = new Uint8Array(mask.buffer);
-   /* initialize mask */
-   for (var n = 0; n < mdata.length; n += 4) {
-      mdata[n + Slate.MASK_OFFSET_SELECT]  = Slate.MASK_VAL_FALSE;
-      mdata[n + Slate.MASK_OFFSET_ALLOW]   = Slate.MASK_VAL_TRUE;
-      mdata[n + Slate.MASK_OFFSET_REQUIRE] = Slate.MASK_VAL_FALSE;
-   }
-   return mask;
-}
+Slate.UCM_NEG  = -1.0;  /* negative */
+Slate.UCM_SNEG = -0.5;  /* soft negative */
+Slate.UCM_NONE =  0.0;  /* unlabeled region */
+Slate.UCM_SPOS =  0.5;  /* soft positive */
+Slate.UCM_POS  =  1.0;  /* positive */
 
 /*****************************************************************************
  * Slate reset.
  *****************************************************************************/
 
 /**
- * Clear selected pixels as well as allowed and required constraints.
- * This results in a blank slate with no selection constraints.
+ * Clear all user scribbles and selection constraints.
  */
 Slate.prototype.clear = function() {
-   /* grab byte-wise view of mask data */
-   var mdata = new Uint8Array(this.mask.buffer);
-   /* reinitialize mask */
-   for (var n = 0; n < mdata.length; n += 4) {
-      mdata[n + Slate.MASK_OFFSET_SELECT]  = Slate.MASK_VAL_FALSE;
-      mdata[n + Slate.MASK_OFFSET_ALLOW]   = Slate.MASK_VAL_TRUE;
-      mdata[n + Slate.MASK_OFFSET_REQUIRE] = Slate.MASK_VAL_FALSE;
-   }
-   /* update attached renderers */
-   Renderer.updateAll(this, { name: "clear" });
+   /* reset scribble */
+   this.scrib.clear();
+   /* reset inferred region labels */
+   this.ucm_labels_base = this.ucm.labelsCreate();
+   this.ucm_labels_pred = this.ucm.labelsCreate();
+   /* reset ucm region counts */
+   this.reg_cnt_neg  = new Uint32Array(this.ucm.countLeaves());
+   this.reg_cnt_pos  = new Uint32Array(this.ucm.countLeaves());
+   this.reg_cnt_sneg = new Uint32Array(this.ucm.countLeaves());
+   this.reg_cnt_spos = new Uint32Array(this.ucm.countLeaves());
 }
 
 /*****************************************************************************
- * Pixel constraints: allowable selection area.
+ * Region load.
  *****************************************************************************/
 
 /**
- * Constrain the selection to be a subset of the specified pixels.
+ * Load a region into the slate for editing.
  *
- * @param {array} pixels pixel ids (linear image coordinates)
+ * @param {Region} r region to load
  */
-Slate.prototype.setAllowedPixels = function(pixels) {
-   /* grab byte-wise view of mask data */
-   var mdata = new Uint8Array(this.mask.buffer);
-   /* clear allowed flags */
-   for (var n = 0; n < mdata.length; n += 4)
-      mdata[n + Slate.MASK_OFFSET_ALLOW] = Slate.MASK_VAL_FALSE;
-   /* update allowed pixel set */
-   for (var p = 0; p < pixels.length; ++p)
-      mdata[4*pixels[p] + Slate.MASK_OFFSET_ALLOW] = Slate.MASK_VAL_TRUE;
-   /* clear selected and required flags on any pixel not allowed */
-   for (var n = 0; n < mdata.length; n += 4) {
-      if (mdata[n + Slate.MASK_OFFSET_ALLOW] == Slate.MASK_VAL_FALSE) {
-         mdata[n + Slate.MASK_OFFSET_SELECT]  = Slate.MASK_VAL_FALSE;
-         mdata[n + Slate.MASK_OFFSET_REQUIRE] = Slate.MASK_VAL_FALSE;
+Slate.prototype.regionLoad = function(r) {
+   /* pause scribble rendering */
+   this.scrib.pauseRendering();
+   /* check for associated scribble data */
+   if (r.scrib_data != null) {
+      /* load scribble data */
+      this.scrib.load(r.scrib_data);
+      /* soften constraints of previous scribble annotation */
+      this.scrib.softenConstraints();
+   } else {
+      /* reset scribble data */
+      this.scrib.clear();
+   }
+   /* restrict scribble to parent region */
+   var rp = r.getParentRegion();
+   if ((rp != null) && ((r.seg == null) || (rp != r.seg.root)))
+      this.scrib.constrainSubset(rp.getPixels());
+   /* require scribble to include child regions */
+   var rc = r.getChildRegions();
+   for (var n = 0; n < rc.length; ++n)
+      this.scrib.constrainRequired(rc[n].getPixels());
+   /* bake currently selected region into soft constraints */
+   this.scrib.bakeConstraints();
+   /* reset ucm region counts */
+   this.reg_cnt_neg  = new Uint32Array(this.ucm.countLeaves());
+   this.reg_cnt_pos  = new Uint32Array(this.ucm.countLeaves());
+   this.reg_cnt_sneg = new Uint32Array(this.ucm.countLeaves());
+   this.reg_cnt_spos = new Uint32Array(this.ucm.countLeaves());
+   /* recompute ucm region counts from scribble */
+   var px = new Uint8Array(this.scrib.px_flags.buffer);
+   var px_rid_map = this.ucm.px_rid_map;
+   for (var p = 0; p < px_rid_map.length; ++p) {
+      /* get id of ucm leaf region */
+      var r_id = px_rid_map[p];
+      /* lookup user marks */
+      var offset = 4*p;
+      var val_neg = px[offset + Scribble.PX_CH_NEG];
+      var val_pos = px[offset + Scribble.PX_CH_POS];
+      /* update counts */
+      this.reg_cnt_neg[r_id]  += (val_neg == Scribble.FLAG_STRONG);
+      this.reg_cnt_pos[r_id]  += (val_pos == Scribble.FLAG_STRONG);
+      this.reg_cnt_sneg[r_id] += (val_neg == Scribble.FLAG_WEAK);
+      this.reg_cnt_spos[r_id] += (val_pos == Scribble.FLAG_WEAK);
+   }
+   /* construct base region labels */
+   this.ucm_labels_base = this.ucm.labelsCreate();
+   for (var n = 0; n < this.ucm.n_regions_leaf; ++n) {
+      /* get positive / negative label differences */
+      var diff  = this.reg_cnt_pos[n]  - this.reg_cnt_neg[n];
+      var sdiff = this.reg_cnt_spos[n] - this.reg_cnt_sneg[n];
+      /* choose region label */
+      if (Math.abs(diff) > 0) {
+         this.ucm_labels_base[n] = Math.sign(diff);
+      } else if (Math.abs(sdiff) > 0) {
+         this.ucm_labels_base[n] = 0.5 * Math.sign(diff);
       }
    }
-   /* update attached renderers */
-   Renderer.updateAll(this, { name: "set-allowed" });
-}
-
-/**
- * Constrain the selection to be a subset of the pixels in the given region.
- *
- * @param {Region} reg containing region
- */
-Slate.prototype.setAllowedRegion = function(reg) {
-   this.setAllowedPixels(reg.getPixels());
-}
-
-/**
- * Constrain the selection to be a subset of the pixels in the given regions.
- *
- * @param {array} regs containing regions
- */
-Slate.prototype.setAllowedRegions = function(regs) {
-   /* grab byte-wise view of mask data */
-   var mdata = new Uint8Array(this.mask.buffer);
-   /* clear allowed flags */
-   for (var n = 0; n < mdata.length; n += 4)
-      mdata[n + Slate.MASK_OFFSET_ALLOW] = Slate.MASK_VAL_FALSE;
-   /* update allowed pixel set */
-   for (var r = 0; r < regs.length; ++r) {
-      /* get pixels for region */
-      var pixels = regs[r].getPixels();
-      /* add pixels to allowed set */
-      for (var p = 0; p < pixels.length; ++p)
-         mdata[4*pixels[p] + Slate.MASK_OFFSET_ALLOW] = Slate.MASK_VAL_TRUE;
+   /* recompute ucm inference */
+   this.ucm_labels_pred = new Float32Array(this.ucm_labels_base);
+   this.ucm.labelsPropagate(this.ucm_labels_pred);
+   /* update scribble inference */
+   for (var n = 0; n < this.ucm.n_regions_leaf; ++n) {
+      /* get inferred region label */
+      var lbl  = this.ucm_labels_pred[n];
+      var val  = Math.sign(lbl);
+      var type =
+         (Math.abs(lbl) > 0.5) ? Scribble.FLAG_STRONG : Scribble.FLAG_WEAK;
+      /* set inference flags for all pixels in region */
+      this.scrib.inferenceUpdate(this.ucm.reg_info[n].pixels, val, type);
    }
-   /* clear selected and required flags on any pixel not allowed */
-   for (var n = 0; n < mdata.length; n += 4) {
-      if (mdata[n + Slate.MASK_OFFSET_ALLOW] == Slate.MASK_VAL_FALSE) {
-         mdata[n + Slate.MASK_OFFSET_SELECT]  = Slate.MASK_VAL_FALSE;
-         mdata[n + Slate.MASK_OFFSET_REQUIRE] = Slate.MASK_VAL_FALSE;
+   /* resume scribble rendering */
+   this.scrib.resumeRendering();
+}
+
+/*****************************************************************************
+ * Region save.
+ *****************************************************************************/
+
+/**
+ * Save current selection into the specified region.
+ *
+ * @param {Region} r region to save
+ */
+Slate.prototype.regionSave = function(r) {
+   /* grab selected pixels from scribble */
+   var pixels = this.scrib.grabSelectedPixels();
+   /* update region contents */
+   r.setPixels(pixels);
+   /* store compressed scribble data in region */
+   r.scrib_data = this.scrib.save();
+}
+
+
+/*****************************************************************************
+ * Region label counting.
+ *****************************************************************************/
+
+/**
+ * Remove the specified pixels from the region label tally.
+ *
+ * @param {array} pixels ids of pixels to remove
+ */
+Slate.prototype.regionCountRemove = function(pixels) {
+   /* get pixel status flags and pixel -> region map */
+   var px = new Uint8Array(this.scrib.px_flags.buffer);
+   var px_rid_map = this.ucm.px_rid_map;
+   for (var n = 0; n < pixels.length; ++n) {
+      /* get pixel and offset */
+      var p = pixels[n];
+      var offset = 4*p;
+      /* get id of ucm leaf region */
+      var r_id = px_rid_map[p];
+      /* lookup user marks */
+      var val_neg = px[offset + Scribble.PX_CH_NEG];
+      var val_pos = px[offset + Scribble.PX_CH_POS];
+      /* update counts */
+      this.reg_cnt_neg[r_id]  -= (val_neg == Scribble.FLAG_STRONG);
+      this.reg_cnt_pos[r_id]  -= (val_pos == Scribble.FLAG_STRONG);
+      this.reg_cnt_sneg[r_id] -= (val_neg == Scribble.FLAG_WEAK);
+      this.reg_cnt_spos[r_id] -= (val_pos == Scribble.FLAG_WEAK);
+   }
+}
+
+/**
+ * Add the specified pixels from the region label tally.
+ *
+ * @param {array} pixels ids of pixels to add
+ */
+Slate.prototype.regionCountAdd = function(pixels) {
+   /* get pixel status flags and pixel -> region map */
+   var px = new Uint8Array(this.scrib.px_flags.buffer);
+   var px_rid_map = this.ucm.px_rid_map;
+   for (var n = 0; n < pixels.length; ++n) {
+      /* get pixel and offset */
+      var p = pixels[n];
+      var offset = 4*p;
+      /* get id of ucm leaf region */
+      var r_id = px_rid_map[p];
+      /* lookup user marks */
+      var val_neg = px[offset + Scribble.PX_CH_NEG];
+      var val_pos = px[offset + Scribble.PX_CH_POS];
+      /* update counts */
+      this.reg_cnt_neg[r_id]  += (val_neg == Scribble.FLAG_STRONG);
+      this.reg_cnt_pos[r_id]  += (val_pos == Scribble.FLAG_STRONG);
+      this.reg_cnt_sneg[r_id] += (val_neg == Scribble.FLAG_WEAK);
+      this.reg_cnt_spos[r_id] += (val_pos == Scribble.FLAG_WEAK);
+   }
+}
+
+/*****************************************************************************
+ * Drawing.
+ *****************************************************************************/
+
+
+
+/**
+ * Draw a negative brush stroke on the slate.
+ * Update the scribble and the region counts for UCM inference.
+ *
+ * @param {array} pixels ids of pixels to mark as negatives
+ * @param {bool}  prop   propagate during inference? (default: false)
+ */
+Slate.prototype.strokeDrawNegative = function(pixels, prop) {
+   this.regionCountRemove(pixels);
+   this.scrib.strokeDrawNegative(pixels, prop);
+   this.regionCountAdd(pixels);
+   this.strokeComplete();
+}
+
+/**
+ * Draw a positive brush stroke on the slate.
+ * Update the scribble and the region counts for UCM inference.
+ *
+ * @param {array} pixels ids of pixels to mark as negatives
+ * @param {bool}  prop   propagate during inference? (default: false)
+ */
+Slate.prototype.strokeDrawPositive = function(pixels, prop) {
+   this.regionCountRemove(pixels);
+   this.scrib.strokeDrawPositive(pixels, prop);
+   this.regionCountAdd(pixels);
+   this.strokeComplete();
+}
+
+/**
+ * Erase a negative area on the slate.
+ * Update the scribble and the region counts for UCM inference.
+ *
+ * @param {array} pixels ids of pixels to mark as negatives
+ */
+Slate.prototype.strokeEraseNegative = function(pixels) {
+   this.regionCountRemove(pixels);
+   this.scrib.strokeEraseNegative(pixels);
+   this.regionCountAdd(pixels);
+}
+
+/**
+ * Erase a positive area on the slate.
+ * Update the scribble and the region counts for UCM inference.
+ *
+ * @param {array} pixels ids of pixels to mark as negatives
+ */
+Slate.prototype.strokeErasePostive = function(pixels) {
+   this.regionCountRemove(pixels);
+   this.scrib.strokeErasePositive(pixels);
+   this.regionCountAdd(pixels);
+}
+
+/**
+ * Complete a stroke, recompute UCM inference, and update the scribble.
+ */
+Slate.prototype.strokeComplete = function() {
+   /* pause scribble rendering */
+   this.scrib.pauseRendering();
+   /* tell scribble to complete the stroke */
+   this.scrib.strokeComplete();
+   /* construct base region labels */
+   this.ucm_labels_base = this.ucm.labelsCreate();
+   for (var n = 0; n < this.ucm.n_regions_leaf; ++n) {
+      /* get positive / negative label differences */
+      var diff  = this.reg_cnt_pos[n]  - this.reg_cnt_neg[n];
+      var sdiff = this.reg_cnt_spos[n] - this.reg_cnt_sneg[n];
+      /* choose region label */
+      if (Math.abs(diff) > 0) {
+         this.ucm_labels_base[n] = Math.sign(diff);
+      } else if (Math.abs(sdiff) > 0) {
+         this.ucm_labels_base[n] = 0.5 * Math.sign(diff);
       }
    }
-   /* update attached renderers */
-   Renderer.updateAll(this, { name: "set-allowed" });
-}
-
-/**
- * Allow all pixels in the image to be selected.
- */
-Slate.prototype.allowAll = function() {
-   /* grab byte-wise view of mask data */
-   var mdata = new Uint8Array(this.mask.buffer);
-   /* set allowed flags */
-   for (var n = 0; n < mdata.length; n += 4)
-      mdata[n + Slate.MASK_OFFSET_ALLOW] = Slate.MASK_VAL_TRUE;
-   /* update attached renderers */
-   Renderer.updateAll(this, { name: "set-allowed" });
-}
-
-/*****************************************************************************
- * Pixel constraints: required selection area.
- *****************************************************************************/
-
-/**
- * Constrain the selection to include the specified pixels.
- *
- * @param {array} pixels pixel ids (linear image coordinates)
- */
-Slate.prototype.setRequiredPixels = function(pixels) {
-   /* grab byte-wise view of mask data */
-   var mdata = new Uint8Array(this.mask.buffer);
-   /* clear required flags */
-   for (var n = 0; n < mdata.length; n += 4)
-      mdata[n + Slate.MASK_OFFSET_REQUIRE] = Slate.MASK_VAL_FALSE;
-   /* update required pixel set */
-   for (var p = 0; p < pixels.length; ++p) {
-      var ind = 4*pixels[p];
-      mdata[ind + Slate.MASK_OFFSET_SELECT]  = Slate.MASK_VAL_TRUE;
-      mdata[ind + Slate.MASK_OFFSET_ALLOW]   = Slate.MASK_VAL_TRUE;
-      mdata[ind + Slate.MASK_OFFSET_REQUIRE] = Slate.MASK_VAL_TRUE;
-   }
-   /* update attached renderers */
-   Renderer.updateAll(this, { name: "set-required" });
-}
-
-/**
- * Constrain the selection to include the pixels in the given region.
- *
- * @param {Region} reg required region
- */
-Slate.prototype.setRequiredRegion = function(reg) {
-   this.setRequiredPixels(reg.getPixels());
-}
-
-/**
- * Constrain the selection to include the pixels in the given regions.
- *
- * @param {array} regs required regions
- */
-Slate.prototype.setRequiredRegions = function(regs) {
-   /* grab byte-wise view of mask data */
-   var mdata = new Uint8Array(this.mask.buffer);
-   /* clear required flags */
-   for (var n = 0; n < mdata.length; n += 4)
-      mdata[n + Slate.MASK_OFFSET_REQUIRE] = Slate.MASK_VAL_FALSE;
-   /* update required pixel set */
-   for (var r = 0; r < regs.length; ++r) {
-      /* get pixels for region */
-      var pixels = regs[r].getPixels();
-      /* add pixels to required set */
-      for (var p = 0; p < pixels.length; ++p) {
-         var ind = 4*pixels[p];
-         mdata[ind + Slate.MASK_OFFSET_SELECT]  = Slate.MASK_VAL_TRUE;
-         mdata[ind + Slate.MASK_OFFSET_ALLOW]   = Slate.MASK_VAL_TRUE;
-         mdata[ind + Slate.MASK_OFFSET_REQUIRE] = Slate.MASK_VAL_TRUE;
+   /* recompute ucm inference */
+   var labels_pred = new Float32Array(this.ucm_labels_base);
+   this.ucm.labelsPropagate(labels_pred);
+   /* update inference flags for changed predictions */
+   for (var n = 0; n < this.ucm.n_regions_leaf; ++n) {
+      /* get inferred region label, check if changed */
+      var lbl = labels_pred[n];
+      if (lbl != this.ucm_labels_pred[n]) {
+         /* get inference value and type */
+         var val  = Math.sign(lbl);
+         var type =
+            (Math.abs(lbl) > 0.5) ? Scribble.FLAG_STRONG : Scribble.FLAG_WEAK;
+         /* set inference flags for all pixels in region */
+         this.scrib.inferenceUpdate(this.ucm.reg_info[n].pixels, val, type);
       }
    }
-   /* update attached renderers */
-   Renderer.updateAll(this, { name: "set-required" });
-}
-
-/**
- * Clear any required selection constraints.
- */
-Slate.prototype.requireNone = function() {
-   /* grab byte-wise view of mask data */
-   var mdata = new Uint8Array(this.mask.buffer);
-   /* clear required flags */
-   for (var n = 0; n < mdata.length; n += 4)
-      mdata[n + Slate.MASK_OFFSET_REQUIRE] = Slate.MASK_VAL_FALSE;
-   /* update attached renderers */
-   Renderer.updateAll(this, { name: "set-required" });
-}
-
-/*****************************************************************************
- * Pixel selection.
- *****************************************************************************/
-
-/**
- * Add pixels to selection, subject to the allowed selection constraints.
- *
- * @param {array} pixels pixel ids (linear image coordinates)
- */
-Slate.prototype.selectPixels = function(pixels) {
-   /* grab byte-wise view of mask data */
-   var mdata = new Uint8Array(this.mask.buffer);
-   /* add pixels to selection */
-   for (var p = 0; p < pixels.length; ++p) {
-      var ind = 4*pixels[p];
-      if (mdata[ind + Slate.MASK_OFFSET_ALLOW] == Slate.MASK_VAL_TRUE)
-         mdata[ind + Slate.MASK_OFFSET_SELECT] = Slate.MASK_VAL_TRUE;
-   }
-   /* update attached renderers */
-   Renderer.updateAll(this, { name: "pixel-select" });
-}
-
-/**
- * Add region to selection, subject to the allowed selection constraints.
- *
- * @param {Region} reg region
- */
-Slate.prototype.selectRegion = function(reg) {
-   this.selectPixels(reg.getPixels());
-}
-
-/**
- * Select all allowable pixels in image.
- */
-Slate.prototype.selectAll = function() {
-   /* grab byte-wise view of mask data */
-   var mdata = new Uint8Array(this.mask.buffer);
-   /* add pixels to selection */
-   for (var n = 0; n < mdata.length; n += 4) {
-      if (mdata[n + Slate.MASK_OFFSET_ALLOW] == Slate.MASK_VAL_TRUE)
-         mdata[n + Slate.MASK_OFFSET_SELECT] = Slate.MASK_VAL_TRUE;
-   }
-   /* update attached renderers */
-   Renderer.updateAll(this, { name: "pixel-select" });
-}
-
-/**
- * Remove pixels from selection, subject to the required selection contraints.
- *
- * @param {array} pixels pixel ids (linear image coordinates)
- */
-Slate.prototype.deselectPixels = function(pixels) {
-   /* grab byte-wise view of mask data */
-   var mdata = new Uint8Array(this.mask.buffer);
-   /* remove pixels from selection */
-   for (var p = 0; p < pixels.length; ++p) {
-      var ind = 4*pixels[p];
-      if (mdata[ind + Slate.MASK_OFFSET_REQUIRE] == Slate.MASK_VAL_FALSE)
-         mdata[ind + Slate.MASK_OFFSET_SELECT] = Slate.MASK_VAL_FALSE;
-   }
-   /* update attached renderers */
-   Renderer.updateAll(this, { name: "pixel-select" });
-}
-
-/**
- * Remove region from selection, subject to the required selection constraints.
- *
- * @param {Region} reg region
- */
-Slate.prototype.deselectRegion = function(reg) {
-   this.deselectPixels(reg.getPixels());
-}
-
-/**
- * Deselect all pixels that are not required to be selected.
- */
-Slate.prototype.deselectAll = function() {
-   /* grab byte-wise view of mask data */
-   var mdata = new Uint8Array(this.mask.buffer);
-   /* add pixels to selection */
-   for (var n = 0; n < mdata.length; n += 4) {
-      if (mdata[n + Slate.MASK_OFFSET_REQUIRE] == Slate.MASK_VAL_FALSE)
-         mdata[n + Slate.MASK_OFFSET_SELECT] = Slate.MASK_VAL_FALSE;
-   }
-   /* update attached renderers */
-   Renderer.updateAll(this, { name: "pixel-select" });
-}
-
-/*****************************************************************************
- * Selection retrieval.
- *****************************************************************************/
-
-/**
- * Retrieve the pixels captured in the current selection.
- *
- * @returns {array} pixel ids (linear image coordinates)
- */
-Slate.prototype.grabPixels = function() {
-   /* initialize captured pixel list */
-   var pixels = new Array(this.mask.length);
-   var n_capture = 0;
-   /* grab byte-wise view of mask data */
-   var mdata = new Uint8Array(this.mask.buffer);
-   /* scan image for captured pixels */
-   for (var p = 0; p < pixels.length; ++p) {
-      if (mdata[4*p + Slate.MASK_OFFSET_SELECT] == Slate.MASK_VAL_TRUE)
-         pixels[n_capture++] = p;
-   }
-   /* trim captured pixel list to correct length */
-   pixels.length = n_capture;
-   return pixels;
+   /* store latest predictions */
+   this.ucm_labels_pred = labels_pred;
+   /* resume scribble rendering */
+   this.scrib.resumeRendering();
 }

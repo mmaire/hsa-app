@@ -63,7 +63,7 @@ function Region(img_seg, pixels) {
    this.layers = [];                /* position in each pixel's region list */
    this.bbox   = [0, 0, 0, 0];      /* bounding box around region */
    /* region annotation data */
-   this.ann_shape = null;           /* shape annotation data */
+   this.scrib_data = null;          /* scribble annotation data */
    /* attributes */
    this.px_attribs  = null;         /* pixel-level attributes */
    this.reg_attribs = null;         /* region-level attributes */

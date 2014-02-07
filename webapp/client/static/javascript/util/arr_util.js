@@ -330,7 +330,7 @@ ArrUtil.seqDecompress = function(seq, ty) {
    /* allocate array */
    var arr = new ty(seq.size);
    /* decompress */
-   for (var n = 0, pos = 0, pos < seq.vals_start.length; ++pos) {
+   for (var n = 0, pos = 0; pos < seq.vals_start.length; ++pos) {
       var v = seq.vals_start[pos];
       do {
          arr[n++] = v;
