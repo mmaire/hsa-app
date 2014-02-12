@@ -1,5 +1,7 @@
 <html>
 <head>
+   <!-- javascript - browser compatibility fixes -->
+   <script src="static/javascript/compat.js"></script>
    <!-- javascript - libraries -->
    <script src="static/javascript/libs/datastream/encoding-indexes.js"></script>
    <script src="static/javascript/libs/datastream/encoding.js"></script>
