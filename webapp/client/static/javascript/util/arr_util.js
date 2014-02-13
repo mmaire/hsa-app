@@ -469,8 +469,8 @@ ArrUtil.deserialize = function(ds, f) {
  */
 ArrUtil.rleSerialize = function(ds, rle, f) {
    ds.writeUint32(rle.size);
-   ArrUtil.serialize(rle.vals, f);
-   ArrUtil.serialize(rle.counts);
+   ArrUtil.serialize(ds, rle.vals, f);
+   ArrUtil.serialize(ds, rle.counts);
 }
 
 /**
@@ -502,8 +502,8 @@ ArrUtil.rleDeserialize = function(ds, f) {
 ArrUtil.seqSerialize = function(ds, seq, f) {
    ds.writeUint32(seq.size);
    ds.writeFloat64(seq.step);
-   ArrUtil.serialize(seq.vals_start, f);
-   ArrUtil.serialize(seq.vals_end, f);
+   ArrUtil.serialize(ds, seq.vals_start, f);
+   ArrUtil.serialize(ds, seq.vals_end, f);
 }
 
 /**
