@@ -205,6 +205,7 @@
          /* attach renderer */
          r_brsh = new BrushRenderer(ctxt, brsh);
          r_brsh.setDepth(D_BRSH);
+         r_brsh.setColor([0, 1, 0, 0.5]);
       }
 
       /* initialization - panels */
@@ -322,6 +323,7 @@
                   /* make region active */
                   r_active = r;
                   /* copy region color to brush and slate */
+                  /*
                   var r_attribs = r.getRegionAttributes();
                   if (r_attribs != null) {
                      var color_brsh = ArrUtil.clone(r_attribs.getColor());
@@ -339,6 +341,7 @@
                         ')'
                      );
                   }
+                  */
                   /* switch to editing mode */
                   $("#main-canvas").addClass("cursor-none");
                   $("#region-panel").css("pointer-events", "none");
@@ -469,13 +472,19 @@
                var ink = brush_panel.getBrushInk();
                if (ink == "positive") {
                   brush_panel.setBrushInk("negative");
+                  if (r_brsh != null)
+                     r_brsh.setColor([1, 0, 0, 0.5]);
                } else if (!(ev.shiftKey)) {
                   brush_panel.setBrushInk("positive");
+                  if (r_brsh != null)
+                     r_brsh.setColor([0, 1, 0, 0.5]);
                }
             } else if (ev.which == 16) {
                /* handle SHIFT key */
                ink_prev = brush_panel.getBrushInk();
                brush_panel.setBrushInk("erase");
+               if (r_brsh != null)
+                  r_brsh.setColor([1, 1, 1, 0.5]);
             }
          });
         $(document).keyup(function (ev) {
@@ -483,7 +492,16 @@
             if (ev.which == 16) {
                /* handle SHIFT key */
                if (ink_prev != null) {
-                  ink_prev = brush_panel.setBrushInk(ink_prev);
+                  brush_panel.setBrushInk(ink_prev);
+                  if (r_brsh != null) {
+                     if (ink_prev == "negative") {
+                        r_brsh.setColor([1, 0, 0, 0.5]);
+                     } else if (ink_prev == "positive") {
+                        r_brsh.setColor([0, 1, 0, 0.5]);
+                     } else {
+                        r_brsh.setColor([1, 1, 1, 0.5]);
+                     }
+                  }
                }
             }
          });
@@ -500,14 +518,20 @@
                      break;
                   case 'g':
                      brush_panel.setBrushInk("positive");
+                     if (r_brsh != null)
+                        r_brsh.setColor([0, 1, 0, 0.5]);
                      ink_prev = null;
                      break;
                   case 'r':
                      brush_panel.setBrushInk("negative");
+                     if (r_brsh != null)
+                        r_brsh.setColor([1, 0, 0, 0.5]);
                      ink_prev = null;
                      break;
                   case 'e':
                      brush_panel.setBrushInk("erase");
+                     if (r_brsh != null)
+                        r_brsh.setColor([1, 1, 1, 0.5]);
                      ink_prev = null;
                      break;
                   case 'f':
