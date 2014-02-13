@@ -96,6 +96,11 @@ Segmentation.prototype.serialize = function(ds) {
       /* store pixels in region */
       ds.writeUint32(reg.pixels.length);
       ds.writeUint32Array(reg.pixels);
+      /* store scribble data */
+      if (reg.scrib_data != null) {
+         ds.writeUint32(1);
+         reg.scrib_data.serialize(ds);
+      }
       /* store region attributes */
       var reg_attribs = reg.reg_attribs;
       if (reg_attribs != null) {
@@ -142,6 +147,12 @@ Segmentation.deserialize = function(img, ds) {
       var pixels = ds.readUint32Array(n_pixels);
       /* create region from pixels and add to segmentation */
       var reg = seg.createRegion(pixels);
+      /* check if region has scribble data */
+      var has_scrib_data = ds.readUint32();
+      if (has_scrib_data != 0) {
+         /* load scribble data */
+         reg.scrib_data = ScribbleData.deserialize(ds);
+      }
       /* check if region attributes exist in datastream */
       var has_reg_attribs = ds.readUint32();
       if (has_reg_attribs != 0) {

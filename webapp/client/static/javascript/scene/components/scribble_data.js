@@ -53,14 +53,14 @@ function ScribbleData(obj) {
       this.fill_th = obj.fill_th;
    } else if (obj instanceof DataStream) {
       /* load pixel and mask flag arrays */
-      this.px_flags   = ArrUtil.rleDeserialize(ds);
-      this.mask_flags = ArrUtil.rleDeserialize(ds);
+      this.px_flags   = ArrUtil.rleDeserialize(obj);
+      this.mask_flags = ArrUtil.rleDeserialize(obj);
       /* load stroke data */
-      this.stroke_id_curr = ds.readUint32();
-      this.stroke_id_soft = ds.readUint32();
-      this.stroke_log = ArrUtil.rleDeserialize(ds);
+      this.stroke_id_curr = obj.readUint32();
+      this.stroke_id_soft = obj.readUint32();
+      this.stroke_log = ArrUtil.rleDeserialize(obj);
       /* load auto-fill threshold */
-      this.fill_th = ds.readFloat64();
+      this.fill_th = obj.readFloat64();
    } else {
       throw("invalid argument to ScribbleData constructor");
    }
