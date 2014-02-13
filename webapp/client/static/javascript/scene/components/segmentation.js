@@ -103,7 +103,7 @@ Segmentation.prototype.serialize = function(ds) {
          ds.writeUint32(1);
          /* store region name */
          ds.writeUint32(reg_attribs.name.length);
-         ds.writeString(reg_attribs.name);
+         ds.writeString(reg_attribs.name, null, reg_attribs.name.length + 1);
          /* store region color */
          ds.writeFloat64Array(reg_attribs.color);
       } else {
@@ -151,6 +151,7 @@ Segmentation.deserialize = function(img, ds) {
          /* load region attributes */
          var name_length = ds.readUint32();
          var name = ds.readString(name_length + 1);
+         name = name.substring(0, name_length);
          reg_attribs.setName(name);
          /* load region color */
          var color = ds.readFloat64Array(4);
