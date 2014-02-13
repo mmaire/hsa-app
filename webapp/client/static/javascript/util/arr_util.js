@@ -332,10 +332,11 @@ ArrUtil.seqDecompress = function(seq, ty) {
    /* decompress */
    for (var n = 0, pos = 0; pos < seq.vals_start.length; ++pos) {
       var v = seq.vals_start[pos];
-      do {
+      while (v != seq.vals_end[pos]) {
          arr[n++] = v;
          v += seq.step;
-      } while (v != seq.vals_end[pos]);
+      }
+      arr[n++] = v;
    }
    return arr;
 }
