@@ -92,7 +92,8 @@ if (ds instanceof ImgData) {
    this.n_regions_leaf = ds.readInt32(); /* #leaves in forest */
    this.n_regions      = ds.readInt32(); /* #nodes in forest (total) */
    /* retrieve map: pixels -> ids of containing leaf regions in UCM */
-   this.px_rid_map = ds.readInt32Array(this.img_size);
+   var rle = ArrUtil.rleDeserialize(ds);
+   this.px_rid_map = ArrUtil.rleDecompress(rle);
    /* initialize region info array */
    this.reg_info = new Array(this.n_regions);
    for (var r = 0; r < this.n_regions; ++r) {

@@ -7,6 +7,7 @@
 %    seg      - segmentation represented as map of pixel id -> region label
 function seg_write(filename, seg)
    f = fopen(filename, 'w');
-   fwrite(f,fliplr(seg.'),'uint32');
+   rle = rle_compress(fliplr(seg.'));
+   rle_write(f, rle, 'uint32');
    fclose(f);
 end

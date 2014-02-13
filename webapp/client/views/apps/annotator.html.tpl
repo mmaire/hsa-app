@@ -176,7 +176,7 @@
       function initAnnotation() {
          /* load UCM */
          var xhrb = new XMLHttpRequest();
-         xhrb.open('GET', '/hsa-app/images/' + img_name + '.ds', true);
+         xhrb.open('GET', '/hsa-app/images/' + img_name + '.ucm', true);
          xhrb.responseType = "arraybuffer";
          xhrb.onload = function(e) {
             /* attach renderer */
@@ -569,8 +569,11 @@
          xhra.responseType = "arraybuffer";
          xhra.onload = function(e) {
             /* update brush */
-            var arr = new Uint32Array(xhra.response);
-            brsh.addType("seg", arr);
+            var arr = new Uint8Array(xhra.response);
+            var ds = new DataStream(arr.buffer);
+            var rle = ArrUtil.rleDeserialize(ds);
+            var arr_seg = ArrUtil.rleDecompress(rle);
+            brsh.addType("seg", arr_seg);
             /* initialize panels */
             initPanels();
             /* go */

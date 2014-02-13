@@ -10,7 +10,8 @@ function ucm_write(filename, ucm, th_arr)
    fwrite(f, numel(unique(px_rid_map(:))), 'int32');
    fwrite(f, numel(regs), 'int32');
    % write pixel -> region map
-   fwrite(f, fliplr(px_rid_map.') - 1, 'int32');
+   rle = rle_compress(fliplr(px_rid_map.') - 1);
+   rle_write(f, rle, 'int32');
    % write region info
    for r = 1:numel(regs)
       reg = regs{r};
