@@ -34,11 +34,13 @@ body {
    min-width: 10.2rem;
 }
 
+/*
 #center-column {
    max-width: calc(100% - 45rem);
    max-width: -moz-calc(100% - 45rem);
    max-width: -webkit-calc(100% - 45rem);
 }
+*/
 
 /* canvas layout */
 #canvas-section {
