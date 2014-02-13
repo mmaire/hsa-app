@@ -130,6 +130,7 @@
       var is_edit = false;    /* in region editing mode? */
       var r_active = null;    /* region being edited */
       var is_down = false;    /* in mouse down? */
+      var ink_prev = null;
       /* scene data */
       var im     = null;
       var img    = null;
@@ -222,15 +223,14 @@
             { min: 1, max: 50, step: 1, step_lg: 5, default_val: 5 }
          );
          brush_panel.bindBrush(
-            function(type, mode, size, touchup) {
+            function(shape, ink, mode, size) {
                brsh.setRadius(size);
-               if (type == "circle")
+               if (shape == "circle")
                   brsh.setType(null);
                else
                   brsh.setType("seg");
             }
          );
-         brush_panel.setBrushType("region");
          /* initialize region panel */
          region_panel = new RegionPanel($("#region-panel"));
          region_panel.loadSegmentation(seg);
@@ -330,7 +330,7 @@
                      color_slt[3]  = 0.5;
                      r_brsh.setColor(color_brsh);
                      //r_slt.setColor(color_slt);
-                     brush_panel.setModeIconColor(
+                     brush_panel.setInkColor(
                         "positive",
                         'rgb(' +
                            Math.round(255*color_brsh[0]) + ',' +
@@ -383,11 +383,16 @@
             var coords = imageCoords(im, ev);
             if ((slt != null) && (is_down)) {
                if ((is_edit) && (coords.flag)) {
-                  var px = brsh.grabPixels();
-                  if (brush_panel.getBrushMode() != "erase") {
-                     if (ev.shiftKey) { slt.strokeErasePositive(px); } else { slt.strokeDrawPositive(px, true); }
+                  var px   = brsh.grabPixels();
+                  var ink  = brush_panel.getBrushInk();
+                  var mode = brush_panel.getBrushMode();
+                  var prop = (mode == "fill");
+                  if (ink == "positive") {
+                     slt.strokeDrawPositive(px, prop);
+                  } else if (ink == "negative") {
+                     slt.strokeDrawNegative(px, prop);
                   } else {
-                     if (ev.shiftKey) { slt.strokeEraseNegative(px); } else { slt.strokeDrawNegative(px, true); }
+                     slt.strokeErase(px);
                   }
                }
             }
@@ -403,11 +408,16 @@
                   var coords = imageCoords(im, ev);
                   if ((slt != null) && (is_down)) {
                      if ((is_edit) && (coords.flag)) {
-                        var px = brsh.grabPixels();
-                        if (brush_panel.getBrushMode() != "erase") {
-                           if (ev.shiftKey) { slt.strokeErasePositive(px); } else { slt.strokeDrawPositive(px, true); }
+                        var px   = brsh.grabPixels();
+                        var ink  = brush_panel.getBrushInk();
+                        var mode = brush_panel.getBrushMode();
+                        var prop = (mode == "fill");
+                        if (ink == "positive") {
+                           slt.strokeDrawPositive(px, prop);
+                        } else if (ink == "negative") {
+                           slt.strokeDrawNegative(px, prop);
                         } else {
-                           if (ev.shiftKey) { slt.strokeEraseNegative(px); } else { slt.strokeDrawNegative(px, true); }
+                           slt.strokeErase(px);
                         }
                      }
                   }
@@ -450,6 +460,67 @@
          canvas.oncontextmenu = function() {
             return false;
          }
+         /* bind shortcut keys */
+         $(document).keydown(function (ev) {
+            /* check key codes */
+            if (ev.which == 9) {
+               /* handle TAB key */
+               ev.preventDefault();
+               var ink = brush_panel.getBrushInk();
+               if (ink == "positive") {
+                  brush_panel.setBrushInk("negative");
+               } else if (!(ev.shiftKey)) {
+                  brush_panel.setBrushInk("positive");
+               }
+            } else if (ev.which == 16) {
+               /* handle SHIFT key */
+               ink_prev = brush_panel.getBrushInk();
+               brush_panel.setBrushInk("erase");
+            }
+         });
+        $(document).keyup(function (ev) {
+            /* check key codes */
+            if (ev.which == 16) {
+               /* handle SHIFT key */
+               if (ink_prev != null) {
+                  ink_prev = brush_panel.setBrushInk(ink_prev);
+               }
+            }
+         });
+         /* bind shortcut character keys */
+         $(document).keypress(function (ev) {
+            if (ev.which != 0) {
+               var c = String.fromCharCode(ev.which);
+               switch (c) {
+                  case 'c':
+                     brush_panel.setBrushShape("circle");
+                     break;
+                  case 'a':
+                     brush_panel.setBrushShape("area");
+                     break;
+                  case 'g':
+                     brush_panel.setBrushInk("positive");
+                     ink_prev = null;
+                     break;
+                  case 'r':
+                     brush_panel.setBrushInk("negative");
+                     ink_prev = null;
+                     break;
+                  case 'e':
+                     brush_panel.setBrushInk("erase");
+                     ink_prev = null;
+                     break;
+                  case 'f':
+                     brush_panel.setBrushMode("fill");
+                     break;
+                  case 't':
+                     brush_panel.setBrushMode("touchup");
+                     break;
+                  default:
+                     break;
+               }
+            }
+         });
          /* show the panels */
          depth_panel.show();
          region_panel.show();
@@ -541,6 +612,7 @@
          initWebGL();
          loadImage();
       });
+
    </script>
 </head>
 <body>

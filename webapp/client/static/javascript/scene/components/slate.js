@@ -241,8 +241,6 @@ Slate.prototype.regionCountAdd = function(pixels) {
  * Drawing.
  *****************************************************************************/
 
-
-
 /**
  * Draw a negative brush stroke on the slate.
  * Update the scribble and the region counts for UCM inference.
@@ -261,7 +259,7 @@ Slate.prototype.strokeDrawNegative = function(pixels, prop) {
  * Draw a positive brush stroke on the slate.
  * Update the scribble and the region counts for UCM inference.
  *
- * @param {array} pixels ids of pixels to mark as negatives
+ * @param {array} pixels ids of pixels to mark as positives
  * @param {bool}  prop   propagate during inference? (default: false)
  */
 Slate.prototype.strokeDrawPositive = function(pixels, prop) {
@@ -275,24 +273,39 @@ Slate.prototype.strokeDrawPositive = function(pixels, prop) {
  * Erase a negative area on the slate.
  * Update the scribble and the region counts for UCM inference.
  *
- * @param {array} pixels ids of pixels to mark as negatives
+ * @param {array} pixels ids of pixels to unmark as negatives
  */
 Slate.prototype.strokeEraseNegative = function(pixels) {
    this.regionCountRemove(pixels);
    this.scrib.strokeEraseNegative(pixels);
    this.regionCountAdd(pixels);
+   this.strokeComplete();
 }
 
 /**
  * Erase a positive area on the slate.
  * Update the scribble and the region counts for UCM inference.
  *
- * @param {array} pixels ids of pixels to mark as negatives
+ * @param {array} pixels ids of pixels to unmark as positives
  */
 Slate.prototype.strokeErasePostive = function(pixels) {
    this.regionCountRemove(pixels);
    this.scrib.strokeErasePositive(pixels);
    this.regionCountAdd(pixels);
+   this.strokeComplete();
+}
+
+/**
+ * Erase both positive and negative marks in an area on the slate.
+ * Update the scribble and the region counts for UCM inference.
+ *
+ * @param {array} pixels ids of pixels to unmark
+ */
+Slate.prototype.strokeErase= function(pixels) {
+   this.regionCountRemove(pixels);
+   this.scrib.strokeErase(pixels);
+   this.regionCountAdd(pixels);
+   this.strokeComplete();
 }
 
 /**

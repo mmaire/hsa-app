@@ -6,143 +6,136 @@
  * Positioning and formatting.
  *****************************************************************************/
 
+/* brush panels */
 .brush-panel {
    position: relative;
    padding-top:    1.0rem;
    padding-bottom: 1.0rem;
    width:  10rem;
-   height: 20rem;
    text-align: center;
 }
 
-.brush-types {
+#draw-brush-panel  { height: 15.0rem; }
+#paint-brush-panel { height: 21.5rem; }
+
+/* brush panel layering */
+.brush-panel   { z-index: 1; }
+.brush-keybind { z-index: 2; }
+
+/* brush shape selection */
+.brush-shapes {
    position: absolute;
    top:  3.5rem;
-   left: 1.1rem;
+   left: 0.9rem;
 }
 
-#brush-types-label {
+#brush-shapes-label {
    position: absolute;
-   left:  1.5rem;
-   top:  14.4rem;
+   left:  1.1rem;
+   top:  11.4rem;
 }
 
-.brush-modes {
+/* brush ink selection */
+.brush-inks {
    position: absolute;
    top:   3.5rem;
-   right: 0.9rem;
+   right: 0.7rem;
 }
 
-#draw-brush-modes-label,
-#paint-brush-modes-label {
+#brush-inks-label {
    position: absolute;
-   right: 1.3rem;
+   right:  1.9rem;
 }
 
-#draw-brush-modes-label {
-   top: 14.4rem;
-}
+#draw-brush-panel  #brush-inks-label { top: 11.4rem; }
+#paint-brush-panel #brush-inks-label { top: 15.1rem; }
 
-#paint-brush-modes-label {
-   top: 10.9rem;
-}
-
+/* brush icons */
 .brush-icon {
-   width:  3.3rem;
-   height: 3.3rem;
+   width:  3.6rem;
+   height: 3.6rem;
 }
 
+/* brush keybind overlays */
+.brush-keybind {
+   position: absolute;
+   left:    0.1rem;
+   bottom: -0.1rem;
+}
+
+/* brush size */
 #brush-size-slider {
    position: absolute;
    left:  1.1rem;
-   top:  16.5rem;
    width: 7.6rem;
 }
 
 #brush-size-label {
    position: absolute;
    left:   1.0rem;
-   top:   18.2rem;
 }
 
 #brush-size-text {
    position: absolute;
    right:  1.1rem;
-   top:   18.2rem;
 }
 
-#brush-touchup-label {
+#draw-brush-panel #brush-size-slider { top: 13.5rem; }
+#draw-brush-panel #brush-size-label  { top: 15.2rem; }
+#draw-brush-panel #brush-size-text   { top: 15.2rem; }
+
+#paint-brush-panel #brush-size-slider { top: 17.0rem; }
+#paint-brush-panel #brush-size-label  { top: 18.7rem; }
+#paint-brush-panel #brush-size-text   { top: 18.7rem; }
+
+/* brush fill */
+#paint-brush-panel #brush-fill-label {
    position: absolute;
-   left:   1.0rem;
-   top:   20.0rem;
+   left: 0.9rem;
+   top: 20.5rem;
 }
 
-.brush-touchup {
+#paint-brush-panel #brush-touchup-label {
    position: absolute;
-   right:  0.9rem;
-   top:   19.9rem;
+   right: 1.1rem;
+   top: 20.5rem;
 }
 
-#touchup-icon {
-   width:  1.1rem;
-   height: 1.1rem;
+#paint-brush-panel #brush-fill-label span {
+   padding-left:  0.5rem !important;
+   padding-right: 0.5rem !important;
+}
+
+#paint-brush-panel #brush-touchup-label span {
+   padding-left:  0.3rem !important;
+   padding-right: 0.3rem !important;
 }
 
 /*****************************************************************************
  * Appearance.
  *****************************************************************************/
 
-/* brush icon opacity */
-.brush-icon.ui-state-default {
-   opacity: 0.75;
-}
+/* brush icons - opacity */
+.brush-icon.ui-state-default { opacity: 0.5; }
+.brush-icon.ui-state-hover   { opacity: 1.0; }
+.brush-icon.ui-state-active  { opacity: 1.0; }
 
-.brush-icon.ui-state-hover,
-.brush-icon.ui-state-active {
-   opacity: 1.0;
-}
+/* brush icons - background size */
+.brush-icon { background-size: 100%; }
 
-/* brush type button backgrounds */
-#brush-circle-icon,
-.brush-circle-icon-bg {
-   background-image: url("icons/brush_circle.png");
-   background-size: 100%;
-}
+/* brush icons - background images */
+.brush-circle-img.active    { background-image: url("icons/brush_circle_active.png"); }
+.brush-circle-img.inactive  { background-image: url("icons/brush_circle_inactive.png"); }
+.brush-area-img.active      { background-image: url("icons/brush_area_active.png"); }
+.brush-area-img.inactive    { background-image: url("icons/brush_area_inactive.png"); }
+.brush-texture-img.active   { background-image: url("icons/brush_texture_active.png"); }
+.brush-texture-img.inactive { background-image: url("icons/brush_texture_inactive.png"); }
 
-#brush-region-icon,
-.brush-region-icon-bg {
-   background-image: url("icons/brush_region.png");
-   background-size: 100%;
-}
+/* brush shape icons - colors */
+#brush-circle-icon { background-color: #AAAAAA; }
+#brush-area-icon   { background-color: #AAAAAA; }
 
-#brush-appearance-icon,
-.brush-appearance-icon-bg {
-   background-image: url("icons/brush_appearance.png");
-   background-size: 100%;
-}
-
-/* brush type button colors */
-#brush-circle-icon,
-#brush-region-icon,
-#brush-appearance-icon {
-   background-color: #AAAAAA;
-}
-
-/* brush mode button colors */
-#brush-positive-icon {
-   background-color: #66FF66;
-}
-
-#brush-negative-icon {
-   background-color: #FF6666;
-}
-
-#brush-erase-icon {
-   background-color: #FFFFFF;
-}
-
-/* touch-up button background */
-#touchup-icon.ui-state-active {
-   background-image: url("../theme/images/ui-icons_222222_256x240.png");
-   background-position: -83px -131px;
-}
+/* brush ink icons - colors */
+#brush-positive-icon { background-color: #66FF66; }
+#brush-negative-icon { background-color: #FF6666; }
+#brush-erase-icon    { background-color: #FFFFFF; }
