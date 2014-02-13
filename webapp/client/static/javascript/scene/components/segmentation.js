@@ -94,8 +94,8 @@ Segmentation.prototype.serialize = function(ds) {
       /* store rank */
       ds.writeFloat64(reg.rank);
       /* store pixels in region */
-      ds.writeUint32(reg.pixels.length);
-      ds.writeUint32Array(reg.pixels);
+      var seq = ArrUtil.seqCompress(reg.pixels, 1, Uint32Array);
+      ArrUtil.seqSerialize(ds, seq);
       /* store scribble data */
       if (reg.scrib_data != null) {
          ds.writeUint32(1);
@@ -143,8 +143,8 @@ Segmentation.deserialize = function(img, ds) {
       var rank = ds.readFloat64();
       ranks[r_id] = rank;
       /* load pixels in region */
-      var n_pixels = ds.readUint32();
-      var pixels = ds.readUint32Array(n_pixels);
+      var seq = ArrUtil.seqDeserialize(ds);
+      var pixels = ArrUtil.seqDecompress(seq);
       /* create region from pixels and add to segmentation */
       var reg = seg.createRegion(pixels);
       /* check if region has scribble data */
