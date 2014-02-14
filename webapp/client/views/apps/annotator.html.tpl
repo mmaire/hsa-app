@@ -319,7 +319,14 @@
                      brsh.clearContainment();
                   }
                   /* load region into slate */
-                  slt.regionLoad(r);
+                  if (r.scrib_data == null) {
+                     /* no existing scribble data - load and impose prior */
+                     slt.regionLoad(r);
+                     slt.imposeBorderPrior(true);
+                  } else {
+                     /* just load existing scribble data */
+                     slt.regionLoad(r);
+                  }
                   /* make region active */
                   r_active = r;
                   /* copy region color to brush and slate */

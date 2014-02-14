@@ -238,6 +238,101 @@ Slate.prototype.regionCountAdd = function(pixels) {
 }
 
 /*****************************************************************************
+ * Selection priors.
+ *****************************************************************************/
+
+/**
+ * Impose a prior that pixels in the circle with radius r centered at location
+ * (cx,cy) in the image plane belong to the object.  Mark them as positive.
+ *
+ * @param {int}  cx   circle center x-coordinate
+ * @param {int}  cy   circle center y-coordinate
+ * @param {r}    r    circle radius
+ * @param {bool} prop propagate during inference? (default: false)
+ */
+Slate.prototype.imposeCenterPrior = function(cx, cy, r, prop) {
+   /* get image dimensions */
+   var sx = this.img.sizeX();
+   var sy = this.img.sizeY();
+   /* compute coordinate limits */
+   var xmin = Math.max(Math.floor(cx - r), 0);
+   var ymin = Math.max(Math.floor(cy - r), 0);
+   var xlim = Math.min(Math.ceil(cx + r) + 1, sx);
+   var ylim = Math.min(Math.ceil(cy + r) + 1, sy);
+   /* compute square of radius */
+   var r_sq = r * r;
+   /* extract pixels within circle */
+   var pixels = new Array((xlim-xmin)*(ylim-ymin));
+   var np = 0;
+   for (var x = xmin; x < xlim; ++x) {
+      var dx = x - cx;
+      var dx_sq = dx * dx;
+      for (var y = ymin, p = x*sy + ymin; y < ylim; ++y, ++p) {
+         var dy = y - cy;
+         var dy_sq = dy * dy;
+         if ((dx_sq + dy_sq) < r_sq)
+            pixels[np++] = p;
+      }
+   }
+   pixels.length = np;
+   /* mark pixels as positive */
+   this.strokeDrawPositive(pixels, prop);
+}
+
+/**
+ * Impose a prior that pixels on the border of the specified bounding box
+ * belong to the background.  Mark them as negative.
+ *
+ * @param {array} bbox 4-element array of [xmin, ymin, xlim, ylim]
+ * @param {bool}  prop propagate during inference? (default: false)
+ */
+Slate.prototype.imposeBBoxPrior = function(bbox, prop) {
+   /* get image dimensions */
+   var sx = this.img.sizeX();
+   var sy = this.img.sizeY();
+   /* extract bounding box coordinates */
+   var xmin = bbox[0];
+   var ymin = bbox[1];
+   var xlim = bbox[2];
+   var ylim = bbox[3];
+   /* assemble coordinate arrays */
+   var xs = [(xmin), (xlim-1)];
+   var ys = [(ymin), (ylim-1)];
+   /* extract pixels on bounding box */
+   var pixels = new Array((xlim-xmin)*2 + (ylim-ymin)*2);
+   var np = 0;
+   /* scan over bounding box edges in x-direction */
+   for (var x = xmin; x < xlim; ++x) {
+      for (var yi = 0; yi < ys.length; ++yi) {
+         pixels[np++] = x*sy + ys[yi];
+      }
+   }
+   /* scan over bounding box edges in y-direction */
+   for (var xi = 0; xi < xs.length; ++xi) {
+      for (var y = ymin; y < ylim; ++y) {
+         pixels[np++] = (xs[xi])*sy + y;
+      }
+   }
+   pixels.length = np;
+   /* mark pixels as negative */
+   this.strokeDrawNegative(pixels, prop);
+}
+
+/**
+ * Impose a prior that pixels on the image border belong to the background.
+ * Mark these pixels as negative.
+ *
+ * @param {bool} prop propagate during inference? (default: false)
+ */
+Slate.prototype.imposeBorderPrior = function(prop) {
+   /* get image dimensions */
+   var sx = this.img.sizeX();
+   var sy = this.img.sizeY();
+   /* impose prior on bounding box fit to image border */
+   this.imposeBBoxPrior([0, 0, sx, sy], prop);
+}
+
+/*****************************************************************************
  * Drawing.
  *****************************************************************************/
 
