@@ -38,6 +38,11 @@ def serve_static(filepath):
 def annotator():
    return template("apps/annotator.html.tpl");
 
+# object segmentation application
+@app.route("/objseg")
+def annotator():
+   return template("apps/objseg.html.tpl");
+
 # sample images
 @app.get("/images/<filename>")
 def sample_images(filename):

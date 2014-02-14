@@ -123,6 +123,12 @@ body {
 
 .ann-saved {
    color: #222222;
+}
+
+.ann-unsaved:hover,
+.ann-saved:hover {
+   cursor: pointer;
+}
 
 /*
 #left-column {
