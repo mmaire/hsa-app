@@ -452,8 +452,14 @@
                   depth_panel.show("fast");
             }
          }
+         $(document).mousewheel(
+            function(ev, delta, deltaX, deltaY) {
+               ev.preventDefault();
+            }
+         );
          $("#main-canvas").mousewheel(
             function(ev, delta, deltaX, deltaY) {
+               ev.preventDefault();
                if (is_edit) {
                   var large_step = !(ev.altKey);
                   if (delta < 0) {
