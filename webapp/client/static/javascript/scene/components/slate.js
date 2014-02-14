@@ -142,7 +142,7 @@ Slate.prototype.regionLoad = function(r) {
       if (Math.abs(diff) > 0) {
          this.ucm_labels_base[n] = Math.sign(diff);
       } else if (Math.abs(sdiff) > 0) {
-         this.ucm_labels_base[n] = 0.5 * Math.sign(diff);
+         this.ucm_labels_base[n] = 0.5 * Math.sign(sdiff);
       }
    }
    /* recompute ucm inference */
@@ -421,7 +421,7 @@ Slate.prototype.strokeComplete = function() {
       if (Math.abs(diff) > 0) {
          this.ucm_labels_base[n] = Math.sign(diff);
       } else if (Math.abs(sdiff) > 0) {
-         this.ucm_labels_base[n] = 0.5 * Math.sign(diff);
+         this.ucm_labels_base[n] = 0.5 * Math.sign(sdiff);
       }
    }
    /* recompute ucm inference */

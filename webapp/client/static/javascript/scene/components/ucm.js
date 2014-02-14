@@ -269,7 +269,7 @@ UCM.prototype.lookupPixels = function(r_id) {
  *
  * (1) Propagate from leaves to roots:
  *     An unlabled node receives the label of its strongest child, unless
- *     children disagree with equal strength.
+ *     children disagree.
  *
  * (2) Propagate from root to leaves:
  *     Unlabeled children assume the label of their closest labeled ancestor.
@@ -328,17 +328,17 @@ UCM.prototype.labelsPropagate = function(labels, th) {
             /* children agree exactly */
             labels[r_id] = lbl_min;
          } else {
-            /* determine winner by label strength */
-            var mag_min = Math.abs(lbl_min);
-            var mag_max = Math.abs(lbl_max);
-            if (mag_min > mag_max) {
-               /* negative labeling is stronger */
-               labels[r_id] = lbl_min;
-            } else if (mag_min < mag_max) {
-               /* positive labeling is stronger */
-               labels[r_id] = lbl_max;
+            /* check signs for consistency */
+            var s_min = Math.sign(lbl_min);
+            var s_max = Math.sign(lbl_max);
+            if ((s_min*s_max) >= 0) {
+               /* children agree, choose strongest */
+               if (Math.abs(lbl_min) > Math.abs(lbl_max))
+                  labels[r_id] = lbl_min;
+               else
+                  labels[r_id] = lbl_max;
             } else {
-               /* children disagree with same strength (inconsistent) */
+               /* children disagree (inconsistent) */
                labels[r_id] = NaN;
             }
          }
