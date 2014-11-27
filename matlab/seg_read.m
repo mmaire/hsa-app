@@ -14,7 +14,8 @@ function seg = seg_read(filename, imsize)
    sy = imsize(2);
    % read file
    f = fopen(filename,'r');
-   L = fread(f,'uint32');
+   rle = rle_read(f, 'uint32');
+   L = rle_decompress(rle);
    fclose(f);
    % reshuffle label matrix
    seg = flipud(reshape(L,[sy sx]).');
