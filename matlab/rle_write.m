@@ -11,14 +11,3 @@ function rle_write(f, rle, ty)
    fwrite(f, numel(rle.counts), 'uint32');
    fwrite(f, rle.counts, 'uint32');
 end
-
-% get type id
-function id = tyid(ty)
-   if (strcmp(ty,'int32'))
-      id = 5;
-   elseif (strcmp(ty,'uint32'))
-      id = 6;
-   else
-      error('type not supported'); % FIXME
-   end
-end
